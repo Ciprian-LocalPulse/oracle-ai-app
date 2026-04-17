@@ -86,22 +86,19 @@
 </div>
 
 <script>
-    // CONFIGURARE SUPABASE - ASIGURĂ-TE CĂ AI PUS DATELE TALE ÎNTRE GHILIMELE!
     const SB_URL = "https://oiotboqjukamwijfmheo.supabase.co"; 
-    const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v";
-    
-    // Am schimbat numele variabilei în 'sb' ca să nu se mai bată cap în cap cu librăria
+    const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v"; 
+
+    // Initializam clientul cu numele 'sb'
     const sb = supabase.createClient(SB_URL, SB_KEY);
 
     let isLoginMode = true;
     let currentUser = null;
 
-    // Verificăm dacă userul este deja logat
+    // Verificam daca userul este deja logat
     window.onload = async () => {
         const { data: { session } } = await sb.auth.getSession();
-        if (session) {
-            setupUI(session.user);
-        }
+        if (session) { setupUI(session.user); }
     };
 
     function toggleAuthMode() {
@@ -115,14 +112,24 @@
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
 
-        if (isLoginMode) {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message);
-            else setupUI(data.user);
-        } else {
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            if (error) alert("Verifică email-ul pentru confirmare!");
-            else alert("Cont creat! Verifică email-ul (Inbox/Spam) pentru confirmare.");
+        if (!email || !password) return alert("Te rog introdu email și parolă!");
+
+        try {
+            if (isLoginMode) {
+                // LOGARE - Folosim 'sb.auth'
+                const { data, error } = await sb.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                setupUI(data.user);
+            } else {
+                // INREGISTRARE - Folosim 'sb.auth'
+                const { data, error } = await sb.auth.signUp({ email, password });
+                if (error) throw error;
+                alert("Cont creat! Te logăm automat...");
+                const { data: loginData } = await sb.auth.signInWithPassword({ email, password });
+                setupUI(loginData.user);
+            }
+        } catch (err) {
+            alert("Eroare: " + err.message);
         }
     }
 
@@ -135,31 +142,41 @@
     }
 
     async function refreshCredits() {
-        const { data, error } = await supabase.from('profiles').select('credits').eq('email', currentUser.email).single();
-        if (data) document.getElementById('user-credits').textContent = data.credits;
+        // Luam creditele din tabelul 'profiles'
+        const { data, error } = await sb.from('profiles').select('credits').eq('email', currentUser.email).single();
+        if (data) {
+            document.getElementById('user-credits').textContent = data.credits;
+        } else {
+            document.getElementById('user-credits').textContent = "2 (Nou)";
+        }
     }
 
     async function signOut() {
-        await supabase.auth.signOut();
+        await sb.auth.signOut();
         location.reload();
     }
 
+    // Functia run() ramane la fel ca in versiunile anterioare, dar foloseste currentUser.email
     async function run() {
         const sector = document.getElementById('sector-select').value;
         const prob = document.getElementById('prob').value;
-        
-        if(!sector || !prob) return alert("Completează datele!");
+        if(!sector || !prob) return alert("Alege sectorul și descrie problema!");
 
         const btn = document.getElementById('runBtn');
         btn.disabled = true;
         document.getElementById('terminal').style.display = 'block';
-        document.getElementById('terminal').textContent = "> Analiză în curs...";
+        document.getElementById('terminal').textContent = "> Oracle procesează datele...";
 
         try {
             const res = await fetch('/api/oracle', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sector, prob, email: currentUser.email, systemPrompt: "Ești un expert McKinsey..." })
+                body: JSON.stringify({ 
+                    sector, 
+                    prob, 
+                    email: currentUser.email,
+                    systemPrompt: "Ești un expert McKinsey. Răspunde doar JSON..." 
+                })
             });
 
             if (res.status === 403) {
@@ -172,7 +189,7 @@
             render(data);
             refreshCredits();
         } catch (e) {
-            alert("Eroare la server!");
+            alert("Eroare de conexiune la server.");
         }
         btn.disabled = false;
     }
@@ -181,11 +198,11 @@
         document.getElementById('result').style.display = 'block';
         document.getElementById('result').innerHTML = `
             <div class="r-grid">
-                <div class="r-cell full"><div class="r-lbl">GAP PIATA</div><div>${r.gap}</div></div>
-                <div class="r-cell"> <div class="r-lbl">VALOARE IP</div><div style="font-size:20px; font-weight:800;">$${r.valoare_min}-${r.valoare_max}M</div></div>
-                <div class="r-cell"> <div class="r-lbl">DIFICULTATE</div><div>${r.dificultate}</div></div>
-            </div>
-        `;
+                <div class="r-cell full"><div class="r-lbl">GAP PIATA</div><div>${r.gap || '—'}</div></div>
+                <div class="r-cell"><div class="r-lbl">VALOARE IP</div><div style="font-size:22px; font-weight:800;">$${r.valoare_min}-${r.valoare_max}M</div></div>
+                <div class="r-cell"><div class="r-lbl">DIFICULTATE</div><div>${r.dificultate || 'Ridicat'}</div></div>
+                <div class="r-cell full"><div class="r-lbl">STRATEGIE MONETIZARE</div><div>${r.monetizare || '—'}</div></div>
+            </div>`;
     }
 </script>
 </body>
