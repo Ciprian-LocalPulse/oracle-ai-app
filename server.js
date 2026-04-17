@@ -3,14 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { OpenAI } = require('openai');
-const { createClient } = require('@supabase/supabase-js'); // <--- Adăugat
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// Conectarea la Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
@@ -21,25 +20,16 @@ const openai = new OpenAI({
 });
 
 app.post('/api/oracle', async (req, res) => {
-  const { sector, prob, systemPrompt, email } = req.body; // <--- Primim și email-ul acum
-// SALVARE ÎN ARHIVĂ
-await supabase
-  .from('analyses')
-  .insert([{ 
-    user_email: email, 
-    sector: sector, 
-    problem: prob, 
-    full_response: JSON.parse(resultText) 
-  }]);
+  const { sector, prob, systemPrompt, email } = req.body;
+
   try {
-    // 1. Verificăm în baza de date dacă userul mai are credite
-    let { data: profile, error } = await supabase
+    // 1. Verificăm creditele
+    let { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('credits')
       .eq('email', email)
       .single();
 
-    // Dacă userul nu există în baza de date, îl creăm acum cu 2 credite
     if (!profile) {
       const { data: newProfile } = await supabase
         .from('profiles')
@@ -50,7 +40,7 @@ await supabase
     }
 
     if (profile.credits <= 0) {
-      return res.status(403).json({ error: "PAYWALL", message: "Nu mai ai credite gratuite." });
+      return res.status(403).json({ error: "PAYWALL", message: "Nu mai ai credite." });
     }
 
     // 2. Rulăm AI-ul
@@ -63,17 +53,30 @@ await supabase
       ],
     });
 
-    // 3. Dacă AI-ul a răspuns cu succes, scădem 1 credit din baza de date
+    const resultText = completion.choices[0].message.content;
+    const parsedResult = JSON.parse(resultText);
+
+    // 3. Scădem creditul
     await supabase
       .from('profiles')
       .update({ credits: profile.credits - 1 })
       .eq('email', email);
 
-    const resultText = completion.choices[0].message.content;
-    res.json(JSON.parse(resultText));
+    // 4. SALVARE ÎN ARHIVĂ (Acum avem parsedResult, deci funcționează!)
+    await supabase
+      .from('analyses')
+      .insert([{ 
+        user_email: email, 
+        sector: sector, 
+        problem: prob, 
+        full_response: parsedResult 
+      }]);
+
+    // 5. Trimitem răspunsul la client
+    res.json(parsedResult);
 
   } catch (error) {
-    console.error("Eroare:", error);
+    console.error("Eroare server:", error);
     res.status(500).json({ error: "Eroare la procesarea cererii" });
   }
 });
