@@ -1,4 +1,9 @@
-
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oracle AI - Innovation Analyzer</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -6,7 +11,8 @@
   --ink:#0a0a0a;--paper:#f5f3ee;--accent:#c8562a;--accent2:#1a3a5c;
   --line:rgba(0,0,0,0.1);--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;
 }
-.w{background:var(--paper);min-height:500px;padding:2rem;position:relative}
+body { background: var(--paper); color: var(--ink); }
+.w{max-width: 1000px; margin: 0 auto; background:var(--paper);min-height:100vh;padding:2rem;position:relative}
 .w::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .header{display:flex;align-items:baseline;gap:16px;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--line)}
 .logo{font-family:var(--display);font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-1px}
@@ -17,7 +23,7 @@
 .status-txt{font-family:var(--mono);font-size:11px;color:#4caf50}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 
-.sectors{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:1.5rem}
+.sectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;margin-bottom:1.5rem}
 .s-btn{background:white;border:1px solid var(--line);border-radius:4px;padding:12px 8px;cursor:pointer;text-align:center;transition:all .15s;position:relative}
 .s-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
 .s-btn.sel{background:var(--ink);border-color:var(--ink);color:white}
@@ -36,13 +42,10 @@ textarea::placeholder{color:#aaa}
 .run-btn{width:100%;background:var(--ink);color:white;border:none;border-radius:4px;padding:14px;font-family:var(--display);font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all .15s;position:relative;overflow:hidden}
 .run-btn:hover{background:var(--accent)}
 .run-btn:disabled{opacity:0.5;cursor:not-allowed}
-.run-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transform:translateX(-100%);transition:transform .6s}
-.run-btn:hover::after{transform:translateX(100%)}
 
 .terminal{background:#0d1117;border-radius:6px;padding:1rem;margin-top:1rem;font-family:var(--mono);font-size:11px;display:none;max-height:180px;overflow-y:auto}
 .t-line{color:#58a6ff;margin-bottom:3px;line-height:1.5}
-.t-ok{color:#3fb950}.t-err{color:#f85149}.t-dim{color:#555}.t-warn{color:#d29922}
-.t-data{color:#e6edf3}
+.t-ok{color:#3fb950}.t-err{color:#f85149}.t-dim{color:#555}.t-warn{color:#d29922}.t-data{color:#e6edf3}
 
 .result{margin-top:1.5rem;display:none}
 .r-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:1rem}
@@ -54,7 +57,6 @@ textarea::placeholder{color:#aaa}
 .r-sub{font-family:var(--mono);font-size:11px;color:#888;margin-top:2px}
 .code-panel{background:#0d1117;border-radius:4px;padding:1rem;font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.8;white-space:pre;overflow-x:auto;margin-top:6px}
 .tag{display:inline-block;background:var(--ink);color:white;border-radius:3px;padding:2px 8px;font-family:var(--mono);font-size:10px;margin:2px;font-weight:500}
-.tag.accent{background:var(--accent)}
 .tag.blue{background:var(--accent2)}
 .score-bar{height:6px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}
 .score-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width 1s ease}
@@ -62,7 +64,19 @@ textarea::placeholder{color:#aaa}
 .act-btn{background:white;border:1px solid var(--line);border-radius:4px;padding:10px 8px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--ink);transition:all .15s;text-align:center}
 .act-btn:hover{border-color:var(--accent);color:var(--accent)}
 .diff-badge{display:inline-block;padding:3px 10px;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:600}
+
+/* PAYWALL MODAL CSS */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; backdrop-filter: blur(4px); padding: 20px; }
+.modal { background: var(--paper); padding: 2.5rem; border-radius: 8px; max-width: 450px; text-align: center; position: relative; border: 2px solid var(--accent2); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.modal-ico { font-size: 40px; margin-bottom: 10px; }
+.modal-title { font-family: var(--display); font-size: 24px; font-weight: 800; color: var(--ink); margin-bottom: 1rem; }
+.modal-txt { font-family: var(--mono); font-size: 13px; color: #444; margin-bottom: 2rem; line-height: 1.6; }
+.stripe-btn { display: inline-block; background: #635bff; color: white; padding: 14px 28px; border-radius: 6px; font-family: var(--display); font-size: 14px; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 12px rgba(99, 91, 255, 0.3); width: 100%; }
+.stripe-btn:hover { background: #4b45c6; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 91, 255, 0.4); }
+.runs-left { font-family: var(--mono); font-size: 10px; color: #888; text-align: center; margin-top: 8px; }
 </style>
+</head>
+<body>
 
 <div class="w">
   <div class="header">
@@ -98,30 +112,59 @@ textarea::placeholder{color:#aaa}
   </div>
 
   <button class="run-btn" id="runBtn" onclick="run()">▶ ACTIVEAZĂ ANALIZA ORACLE</button>
+  <div class="runs-left" id="runsLeftTxt"></div>
 
   <div class="terminal" id="terminal"></div>
-
   <div class="result" id="result"></div>
+</div>
+
+<div class="modal-overlay" id="paywallModal">
+  <div class="modal">
+    <div class="modal-ico">🔮</div>
+    <div class="modal-title">Limită Atinsă</div>
+    <div class="modal-txt">Ai folosit cele 2 analize gratuite. Pentru a debloca accesul nelimitat la Oracle AI și a genera soluții de business la nesfârșit, treci la planul Premium.</div>
+    <a href="https://buy.stripe.com/bJeeVcdhsaMsgL44Wnc3m0a" class="stripe-btn" target="_blank">Deblochează Premium - 19€/lună</a>
+  </div>
 </div>
 
 <script>
 let sector = '';
+const MAX_FREE_RUNS = 2;
+
+// Afișează de la început câte rulări mai are
+updateRunsDisplay();
+
+function updateRunsDisplay() {
+  let runs = parseInt(localStorage.getItem('oracle_runs') || '0');
+  let left = Math.max(0, MAX_FREE_RUNS - runs);
+  document.getElementById('runsLeftTxt').textContent = `Analize gratuite rămase: ${left}/${MAX_FREE_RUNS}`;
+}
+
 function sel(b){
   document.querySelectorAll('.s-btn').forEach(x=>x.classList.remove('sel'));
   b.classList.add('sel'); sector = b.dataset.v;
 }
+
 function log(msg, cls='t-line'){
   const t = document.getElementById('terminal');
   t.style.display='block';
   t.innerHTML += `<div class="${cls}">${msg}</div>`;
   t.scrollTop = t.scrollHeight;
 }
+
 function setStatus(txt, color){
   document.getElementById('statusTxt').textContent = txt;
   document.getElementById('statusDot').style.background = color;
 }
 
 async function run(){
+  // LOGICA PAYWALL
+  let currentRuns = parseInt(localStorage.getItem('oracle_runs') || '0');
+  if(currentRuns >= MAX_FREE_RUNS) {
+    document.getElementById('paywallModal').style.display = 'flex';
+    return; // Oprește execuția, nu mai trimite la server
+  }
+
   const prob = document.getElementById('prob').value.trim();
   if(!sector){log('✗ Selectează o industrie mai întâi','t-err');document.getElementById('terminal').style.display='block';return;}
   if(!prob){log('✗ Descrie problema în câmpul de text','t-err');document.getElementById('terminal').style.display='block';return;}
@@ -134,50 +177,37 @@ async function run(){
   setStatus('ANALYZING...','#d29922');
 
   log('> Inițializare Oracle v2.0 ...','t-dim');
-  log('> Sector: ' + sector,'t-data');
-  log('> Conectare la Anthropic API ...','t-dim');
+  
+  // Înregistrăm utilizarea (consumăm 1 credit)
+  localStorage.setItem('oracle_runs', currentRuns + 1);
+  updateRunsDisplay();
 
-  const sys = `Ești un expert mondial în inovație tech și evaluare startup-uri. Experiență: McKinsey, Y Combinator, Sequoia.
-Analizezi probleme de industrie și generezi soluții tehnice concrete.
-IMPORTANT: Răspunde DOAR cu JSON pur, fără markdown, fără text înainte sau după. Structura exactă:
-{"gap":"descriere gap piata 2-3 propozitii","solutie":"arhitectura tehnica 3-4 propozitii","cod":"pseudocod tehnic 12 linii cu comentarii","valoare_min":5,"valoare_max":50,"moneda":"milioane USD","monetizare":"cum se face bani 2-3 propozitii","luni_min":6,"luni_max":18,"dificultate":"Ridicat","tech":["ML","Python","API REST"],"clienti":["Amazon","DHL","FedEx"],"scor_unicitate":78,"scor_piata":85,"scor_tehnic":72}`;
-
-  const usr = `Industrie: ${sector}\nProblema: ${prob}\nGenereaza analiza completa cu evaluare comerciala realista.`;
+  const sys = `Ești un expert mondial în inovație tech și evaluare startup-uri. Experiență: McKinsey, Y Combinator. Răspunde DOAR cu JSON pur. Structura exactă:
+{"gap":"descriere gap piata 2-3 propozitii","solutie":"arhitectura tehnica 3-4 propozitii","cod":"pseudocod tehnic 12 linii cu comentarii","valoare_min":5,"valoare_max":50,"moneda":"milioane USD","monetizare":"cum se face bani 2-3 propozitii","luni_min":6,"luni_max":18,"dificultate":"Ridicat","tech":["ML","Python"],"clienti":["Amazon","DHL"],"scor_unicitate":78,"scor_piata":85,"scor_tehnic":72}`;
 
   try {
-    log('> Trimitere request la serverul local (OpenAI GPT-4o) ...','t-dim');
-    
+    log('> Trimitere request la server ...','t-dim');
     const res = await fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sector: sector,
-        prob: prob,
-        systemPrompt: sys
-      })
+      body: JSON.stringify({ sector: sector, prob: prob, systemPrompt: sys })
     });
 
-    log(`> HTTP Status: ${res.status} ${res.statusText}`, res.ok ? 't-ok' : 't-err');
+    log(`> HTTP Status: ${res.status}`, res.ok ? 't-ok' : 't-err');
+    if (!res.ok) throw new Error('Eroare de la server');
 
-    if (!res.ok) {
-        throw new Error('Eroare de la server');
-    }
-
-    // Backend-ul nostru returnează deja un obiect JSON curat
     const parsed = await res.json(); 
-    
-    log('✓ Date parsate cu succes de la OpenAI','t-ok');
-    log(`✓ Valoare estimată: $${parsed.valoare_min}-${parsed.valoare_max} ${parsed.moneda}`,'t-ok');
-    log('✓ Randare rezultate...','t-ok');
-    
+    log('✓ Date procesate cu succes','t-ok');
     setStatus('ANALYSIS COMPLETE','#4caf50');
     render(parsed);
 
   } catch(e){
     log('✗ Eroare de rețea sau API: ' + e.message,'t-err');
     setStatus('SYSTEM ERROR','#f85149');
+    // Dacă dă eroare, îi dăm înapoi creditul consumat
+    localStorage.setItem('oracle_runs', currentRuns);
+    updateRunsDisplay();
   }
-
   btn.disabled=false; btn.textContent='▶ ACTIVEAZĂ ANALIZA ORACLE';
 }
 
@@ -187,88 +217,36 @@ function render(r){
   const u = Math.min(100,r.scor_unicitate||70);
   const p = Math.min(100,r.scor_piata||75);
   const te = Math.min(100,r.scor_tehnic||65);
-  const diffColors = {'Scăzut':'#3B6D11','Mediu':'#BA7517','Ridicat':'#c8562a','Extrem':'#A32D2D'};
-  const diffBgs = {'Scăzut':'#EAF3DE','Mediu':'#FAEEDA','Ridicat':'#fae8e0','Extrem':'#FCEBEB'};
-  const dc = diffColors[r.dificultate]||'#c8562a';
-  const db = diffBgs[r.dificultate]||'#fae8e0';
+  const dc = r.dificultate === 'Extrem' ? '#A32D2D' : r.dificultate === 'Ridicat' ? '#c8562a' : r.dificultate === 'Mediu' ? '#BA7517' : '#3B6D11';
+  const db = r.dificultate === 'Extrem' ? '#FCEBEB' : r.dificultate === 'Ridicat' ? '#fae8e0' : r.dificultate === 'Mediu' ? '#FAEEDA' : '#EAF3DE';
 
   document.getElementById('result').style.display='block';
   document.getElementById('result').innerHTML = `
 <div class="r-grid">
-  <div class="r-cell full">
-    <div class="r-lbl">GAP DE PIAȚĂ IDENTIFICAT</div>
-    <div class="r-val">${r.gap||'—'}</div>
-  </div>
-
-  <div class="r-cell">
-    <div class="r-lbl">VALOARE ESTIMATĂ IP</div>
-    <div class="r-big">$${r.valoare_min}–${r.valoare_max}</div>
-    <div class="r-sub">${r.moneda||'milioane USD'}</div>
-  </div>
-  <div class="r-cell">
-    <div class="r-lbl">TIMP DEZVOLTARE</div>
-    <div class="r-big">${r.luni_min}–${r.luni_max}</div>
-    <div class="r-sub">luni până la MVP</div>
-    <div style="margin-top:10px"><div class="r-lbl">DIFICULTATE REPLICARE</div>
-    <span class="diff-badge" style="background:${db};color:${dc}">${r.dificultate}</span></div>
-  </div>
-
-  <div class="r-cell full">
-    <div class="r-lbl">SCORING COMERCIAL</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:6px">
-      <div>
-        <div style="display:flex;justify-content:space-between"><span style="font-family:var(--mono);font-size:10px;color:#888">Unicitate</span><span style="font-family:var(--mono);font-size:10px;font-weight:600">${u}/100</span></div>
-        <div class="score-bar"><div class="score-fill" style="width:${u}%"></div></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between"><span style="font-family:var(--mono);font-size:10px;color:#888">Piață</span><span style="font-family:var(--mono);font-size:10px;font-weight:600">${p}/100</span></div>
-        <div class="score-bar"><div class="score-fill" style="width:${p}%"></div></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between"><span style="font-family:var(--mono);font-size:10px;color:#888">Tehnic</span><span style="font-family:var(--mono);font-size:10px;font-weight:600">${te}/100</span></div>
-        <div class="score-bar"><div class="score-fill" style="width:${te}%"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="r-cell full">
-    <div class="r-lbl">ARHITECTURA SOLUȚIEI</div>
-    <div class="r-val">${r.solutie||'—'}</div>
-  </div>
-
-  <div class="r-cell full">
-    <div class="r-lbl">CONCEPT TEHNIC — PSEUDOCOD</div>
-    <div class="code-panel">${esc(r.cod||'')}</div>
-  </div>
-
-  <div class="r-cell full">
-    <div class="r-lbl">MODEL DE MONETIZARE</div>
-    <div class="r-val">${r.monetizare||'—'}</div>
-  </div>
-
-  <div class="r-cell">
-    <div class="r-lbl">STACK TEHNOLOGIC</div>
-    <div style="margin-top:4px">${techTags}</div>
-  </div>
-  <div class="r-cell">
-    <div class="r-lbl">CLIENȚI POTENȚIALI</div>
-    <div style="margin-top:4px">${clientTags}</div>
-  </div>
+  <div class="r-cell full"><div class="r-lbl">GAP DE PIAȚĂ IDENTIFICAT</div><div class="r-val">${r.gap||'—'}</div></div>
+  <div class="r-cell"><div class="r-lbl">VALOARE ESTIMATĂ IP</div><div class="r-big">$${r.valoare_min}–${r.valoare_max}</div><div class="r-sub">${r.moneda||'milioane USD'}</div></div>
+  <div class="r-cell"><div class="r-lbl">TIMP DEZVOLTARE</div><div class="r-big">${r.luni_min}–${r.luni_max}</div><div class="r-sub">luni până la MVP</div><div style="margin-top:10px"><div class="r-lbl">DIFICULTATE REPLICARE</div><span class="diff-badge" style="background:${db};color:${dc}">${r.dificultate}</span></div></div>
+  <div class="r-cell full"><div class="r-lbl">SCORING COMERCIAL</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:6px"><div><div style="display:flex;justify-content:space-between"><span style="font-family:var(--mono);font-size:10px;color:#888">Unicitate</span><span style="font-family:var(--mono);font-size:10px;font-weight:600">${u}/100</span></div><div class="score-bar"><div class="score-fill" style="width:${u}%"></div></div></div><div><div style="display:flex;justify-content:space-between"><span style="font-family:var(--mono);font-size:10px;color:#888">Piață</span><span style="font-family:var(--mono);font-size:10px;font-weight:600">${p}/100</span></div><div class="score-bar"><div class="score-fill" style="width:${p}%"></div></div></div><div><div style="display:flex;justify-content:space-between"><span style="font-family:var(--mono);font-size:10px;color:#888">Tehnic</span><span style="font-family:var(--mono);font-size:10px;font-weight:600">${te}/100</span></div><div class="score-bar"><div class="score-fill" style="width:${te}%"></div></div></div></div></div>
+  <div class="r-cell full"><div class="r-lbl">ARHITECTURA SOLUȚIEI</div><div class="r-val">${r.solutie||'—'}</div></div>
+  <div class="r-cell full"><div class="r-lbl">CONCEPT TEHNIC — PSEUDOCOD</div><div class="code-panel">${esc(r.cod||'')}</div></div>
+  <div class="r-cell full"><div class="r-lbl">MODEL DE MONETIZARE</div><div class="r-val">${r.monetizare||'—'}</div></div>
+  <div class="r-cell"><div class="r-lbl">STACK TEHNOLOGIC</div><div style="margin-top:4px">${techTags}</div></div>
+  <div class="r-cell"><div class="r-lbl">CLIENȚI POTENȚIALI</div><div style="margin-top:4px">${clientTags}</div></div>
 </div>
-
 <div class="actions">
-  <button class="act-btn" onclick="sendPrompt('Explică-mi în detaliu cum protejez legal această soluție prin brevete internaționale. Ce pași urmez?')">📋 Strategie brevete ↗</button>
-  <button class="act-btn" onclick="sendPrompt('Creează un pitch deck complet de 6 slide-uri pentru investitori pentru această soluție tehnologică.')">💼 Pitch investitori ↗</button>
-  <button class="act-btn" onclick="sendPrompt('Care sunt primii 5 clienți pe care trebuie să îi contactez și cum îi abordez concret? Scrie emailurile.')">📧 Go-to-market ↗</button>
+  <button class="act-btn" onclick="sendPrompt('Explică-mi în detaliu cum protejez legal această soluție prin brevete.')">📋 Strategie brevete ↗</button>
+  <button class="act-btn" onclick="sendPrompt('Creează un pitch deck de 6 slide-uri pentru investitori.')">💼 Pitch investitori ↗</button>
+  <button class="act-btn" onclick="sendPrompt('Care sunt primii 5 clienți pe care trebuie să îi contactez?')">📧 Go-to-market ↗</button>
 </div>`;
 }
+
 function esc(t){return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 function sendPrompt(text) {
-  // Pune textul butonului in input
   document.getElementById('prob').value = text;
-  // Deruleaza pagina sus ca sa se vada input-ul
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  // Ruleaza analiza
   run();
 }
 </script>
+</body>
+</html>
