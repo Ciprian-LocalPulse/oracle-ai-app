@@ -70,6 +70,22 @@
         .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;justify-content:center;align-items:center;backdrop-filter:blur(8px)}
         .modal{background:var(--paper);padding:3rem;border-radius:16px;max-width:450px;text-align:center;border:1px solid var(--accent)}
         .stripe-btn{display:block;background:#635bff;color:white;padding:18px;border-radius:8px;text-decoration:none;font-weight:800;margin-top:2rem}
+        /* Ajustare specială pentru conținutul PDF */
+    #pdf-content {
+        padding: 40px;
+        background: white;
+        color: #000 !important; /* Forțăm textul negru pe PDF */
+    }
+
+    #pdf-content .r-grid {
+        display: block !important; /* Transformăm grila în listă pentru PDF ca să nu se bug-uiască */
+    }
+
+    #pdf-content .r-cell {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        page-break-inside: avoid; /* Să nu se taie celula între pagini */
+    }
     </style>
 </head>
 <body>
@@ -260,13 +276,22 @@
 
     function downloadPDF() {
         const element = document.getElementById('pdf-content');
+        
+        // Îi dăm niște setări mai "serioase"
         const opt = {
-            margin: 1,
-            filename: 'Oracle_AI_Report.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            margin:       [0.5, 0.5], // Margini de jumătate de inch
+            filename:     'Oracle_AI_Strategic_Report.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                letterRendering: true,
+                useCORS: true,
+                logging: false
+            },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
+
+        // Rulăm procesul
         html2pdf().set(opt).from(element).save();
     }
 
