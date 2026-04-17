@@ -189,13 +189,15 @@
         term.innerHTML = `> Inițializare Oracle v2.0...<br>> Verificare credite pentru ${currentUser.email}...`;
 
         // INSTRUCTIUNI ULTRA-STRICTE PENTRU AI
-        const promptStrict = `Ești un expert McKinsey. Analizează problema și răspunde EXCLUSIV sub formă de obiect JSON, respectând EXACT aceste chei:
-        "gap": "descriere scurtă a oportunității",
-        "valoare_min": 10,
-        "valoare_max": 50,
-        "dificultate": "Scăzută/Medie/Ridicată",
-        "monetizare": "explicație scurtă a modelului de business".
-        Nu adăuga niciun alt text în afara de JSON.`;
+        const promptStrict = `Ești un partener senior la McKinsey & Company. Analizează problema și oferă o soluție de miliarde de dolari. Răspunde EXCLUSIV JSON cu aceste chei:
+"gap": "Descriere detaliată a eșecului actual al pieței (minim 30 cuvinte).",
+"solutie_tehnica": "Arhitectura software propusă: ce AI folosim, ce senzori, ce baze de date (detaliat).",
+"valoare_min": 15,
+"valoare_max": 80,
+"dificultate": "Ridicată/Critică",
+"monetizare": "Model de business detaliat: preț per utilizator, licențiere, parteneriate strategice.",
+"go_to_market": "Cum obținem primii 10 clienți enterprise în 6 luni.",
+"riscuri": "Principalele 2 bariere (tehnice sau legale) și cum le depășim."`;
 
         try {
             const res = await fetch('/api/oracle', {
@@ -228,15 +230,22 @@
     }
 
     function render(r) {
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('result').innerHTML = `
-            <div class="r-grid">
-                <div class="r-cell full"><div class="r-lbl">GAP IDENTIFICAT</div><div class="r-val">${r.gap || 'N/A'}</div></div>
-                <div class="r-cell"><div class="r-lbl">VALOARE ESTIMATĂ</div><div class="r-big">$${r.valoare_min || 0}-${r.valoare_max || 0}M</div></div>
-                <div class="r-cell"><div class="r-lbl">DIFICULTATE</div><div class="r-big" style="font-size:18px">${r.dificultate || 'Medie'}</div></div>
-                <div class="r-cell full"><div class="r-lbl">ARHITECTURĂ ȘI MONETIZARE</div><div class="r-val">${r.monetizare || 'N/A'}</div></div>
-            </div>`;
-    }
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').innerHTML = `
+        <div class="r-grid">
+            <div class="r-cell full"><div class="r-lbl">OPORTUNITATE PIAȚĂ</div><div class="r-val">${r.gap}</div></div>
+            
+            <div class="r-cell"><div class="r-lbl">VALOARE EXIT (5 ANI)</div><div class="r-big">$${r.valoare_min}-${r.valoare_max}M</div></div>
+            <div class="r-cell"><div class="r-lbl">COMPLEXITATE</div><div class="r-big" style="font-size:18px">${r.dificultate}</div></div>
+
+            <div class="r-cell full"><div class="r-lbl">ARHITECTURĂ TEHNICĂ PROPUSĂ</div><div class="r-val" style="color:#2a5c4d; font-weight:600;">${r.solutie_tehnica}</div></div>
+            
+            <div class="r-cell"><div class="r-lbl">STRATEGIE DE MONETIZARE</div><div class="r-val">${r.monetizare}</div></div>
+            <div class="r-cell"><div class="r-lbl">GO-TO-MARKET (0-6 LUNI)</div><div class="r-val">${r.go_to_market}</div></div>
+            
+            <div class="r-cell full"><div class="r-lbl">BARIERE ȘI MITIGARE RISCURI</div><div class="r-val" style="border-left: 2px solid var(--accent); padding-left:10px;">${r.riscuri}</div></div>
+        </div>`;
+}
 </script>
 </body>
 </html>
