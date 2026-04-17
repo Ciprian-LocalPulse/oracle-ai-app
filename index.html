@@ -182,9 +182,11 @@ async function run(){
   localStorage.setItem('oracle_runs', currentRuns + 1);
   updateRunsDisplay();
 
-  const sys = `Ești un expert mondial în inovație tech și evaluare startup-uri. Experiență: McKinsey, Y Combinator. Răspunde DOAR cu JSON pur. Structura exactă:
-{"gap":"descriere gap piata 2-3 propozitii","solutie":"arhitectura tehnica 3-4 propozitii","cod":"pseudocod tehnic 12 linii cu comentarii","valoare_min":5,"valoare_max":50,"moneda":"milioane USD","monetizare":"cum se face bani 2-3 propozitii","luni_min":6,"luni_max":18,"dificultate":"Ridicat","tech":["ML","Python"],"clienti":["Amazon","DHL"],"scor_unicitate":78,"scor_piata":85,"scor_tehnic":72}`;
+  const sys = `Ești un expert mondial în strategie de afaceri și inovație tehnologică (ex-McKinsey, ex-Sequoia Capital).
+Sarcina ta este să transformi o problemă simplă într-un Blueprint de business ultra-detaliat. Fii extrem de specific, tehnic și vizionar. Nu folosi generalități.
 
+IMPORTANT: Răspunde DOAR cu JSON pur. Trebuie să folosești EXACT această structură și aceste chei (nu inventa altele):
+{"gap":"Analiză critică: de ce soluțiile actuale eșuează și unde e oportunitatea de miliarde (3-4 propoziții)","solutie":"Arhitectură tehnică: flux de date, module AI și integrări (3-4 propoziții)","cod":"Pseudocod complex, bine comentat, care arată logica de bază a inovației","valoare_min":5,"valoare_max":50,"moneda":"milioane USD","monetizare":"Minim 3 fluxuri de venituri detaliate: SaaS, API, Marketplace etc.","luni_min":6,"luni_max":18,"dificultate":"Ridicat","tech":["ML","Python","AWS"],"clienti":["Amazon","DHL"],"scor_unicitate":88,"scor_piata":92,"scor_tehnic":85}`;
   try {
     log('> Trimitere request la server ...','t-dim');
     const res = await fetch('/api/oracle', {
