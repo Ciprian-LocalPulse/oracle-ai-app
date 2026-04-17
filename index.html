@@ -256,8 +256,22 @@ option{background:var(--deep)}
 .stagger-2{animation-delay:0.2s}
 .stagger-3{animation-delay:0.3s}
 
-/* === PDF PRINT STYLES === */
-#pdf-render{background:white;color:#111;padding:50px;font-family:'Barlow',sans-serif;display:none}
+/* ============================================================
+   FIX #3 — PDF RENDER TARGET
+   position:absolute + left:-9999px permite motorului html2pdf
+   să "vadă" și să randeze conținutul fără a-l afișa utilizatorului.
+   Vechiul display:none ascundea complet elementul din DOM,
+   generând un PDF complet gol.
+   ============================================================ */
+#pdf-render{
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 800px;
+  background: white;
+  color: #111;
+  font-family: 'Barlow', Arial, sans-serif;
+}
 </style>
 </head>
 <body>
@@ -276,9 +290,7 @@ option{background:var(--deep)}
 
   <!-- TICKER -->
   <div class="ticker-bar">
-    <div class="ticker-inner" id="ticker-inner">
-      <!-- duplicated for infinite scroll -->
-    </div>
+    <div class="ticker-inner" id="ticker-inner"></div>
   </div>
 
   <div class="wrap">
@@ -443,7 +455,11 @@ option{background:var(--deep)}
   </div><!-- /wrap -->
 </div><!-- /app -->
 
-<!-- PDF RENDER TARGET -->
+<!-- ============================================================
+     FIX #3 — PDF RENDER TARGET (mutat în afara .wrap)
+     Elementul este acum poziționat off-screen, nu ascuns cu
+     display:none, astfel html2pdf poate să-l captureze corect.
+     ============================================================ -->
 <div id="pdf-render"></div>
 
 <!-- PAYWALL MODAL -->
@@ -513,7 +529,7 @@ let lastResult = null;
   ];
   const inner = document.getElementById('ticker-inner');
   const html = items.map(i=>`<span class="ticker-item"><span class="t-label">${i.label}</span><span class="${i.cls}">${i.val}</span></span>`).join('');
-  inner.innerHTML = html + html; // duplicate for infinite
+  inner.innerHTML = html + html;
 })();
 
 /* ===================== CHAR COUNT ===================== */
@@ -556,7 +572,6 @@ async function handleAuth(){
 window.onload = async () => {
   const {data:{session}} = await sb.auth.getSession();
   if(session) setupUI(session.user);
-  // simulate latency
   document.getElementById('api-latency').textContent = (Math.random()*30+15).toFixed(0);
 };
 
@@ -571,17 +586,14 @@ async function setupUI(user){
 
 async function refreshCredits(){
   const {data} = await sb.from('profiles').select('credits').eq('email', currentUser.email).single();
-  if(data){
-    document.getElementById('user-credits').textContent = data.credits;
-  }
+  if(data) document.getElementById('user-credits').textContent = data.credits;
 }
 
 async function loadHistory(){
   const {data} = await sb.from('analyses').select('*').eq('user_email', currentUser.email).order('created_at',{ascending:false}).limit(15);
   const container = document.getElementById('history-list');
   if(data && data.length > 0){
-    const total = data.length;
-    document.getElementById('total-analyses').textContent = total;
+    document.getElementById('total-analyses').textContent = data.length;
     container.innerHTML = data.map(item=>`
       <div class="history-item" onclick='renderResult(${JSON.stringify(JSON.stringify(item.full_response))})'>
         <div class="hi-date">${new Date(item.created_at).toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})}</div>
@@ -647,8 +659,8 @@ async function run(){
   clearTerminal();
 
   const market = document.getElementById('opt-market').value;
-  const stage = document.getElementById('opt-stage').value;
-  const depth = document.getElementById('opt-depth').value;
+  const stage  = document.getElementById('opt-stage').value;
+  const depth  = document.getElementById('opt-depth').value;
 
   const logs = [
     ['Inițializare Oracle Intelligence Engine v4.2...',''],
@@ -667,7 +679,6 @@ async function run(){
     termLog(`▸ ${logs[i][0]}`, logs[i][1]);
   }
 
-  /* === SYSTEM PROMPT — HYPER-DETAILED === */
   const systemPrompt = `You are a Principal-level strategy consultant at McKinsey & Company with deep expertise in venture capital, M&A, and technology strategy. You have advised Fortune 500 companies, sovereign wealth funds, and Tier-1 VCs (a16z, Sequoia, General Atlantic) across 40+ countries.
 
 Your task is to produce a COMPREHENSIVE, ACTIONABLE strategic analysis report based on the client's industry sector and challenge. This is a paid enterprise deliverable — it must be meticulous, data-rich, and immediately usable by a C-suite executive or investment committee.
@@ -682,46 +693,35 @@ REQUIRED JSON STRUCTURE (all fields mandatory):
 
 {
   "oportunitate": "4-5 propoziții care descriu gap-ul de piață identificat, de ce există acum, și ce forțe macroeconomice sau tehnologice îl accelerează. Menționați un trend specific (ex: AI Act, PSD3, Net Zero 2030, Fed rate cycle, etc.)",
-  
   "valoare_min": <număr întreg în milioane USD reprezentând valoarea de exit conservatoare, bazat pe multiplii de piață reali>,
   "valoare_max": <număr întreg în milioane USD reprezentând valoarea de exit optimistă>,
   "arr_potential": "<ARR potențial la 5 ani, ex: $8-12M>",
   "multiplicator": "<multiplicator realist de exit, ex: 8-12x ARR>",
-  
   "scor_oportunitate": <număr 1-100 reprezentând atractivitatea oportunității, bazat pe TAM, competiție, timing, defensibilitate>,
   "dificultate": "<Scăzută / Medie / Ridicată / Extrem de Ridicată>",
   "timp_break_even": "<ex: 18-24 luni>",
-  
-  "model_monetizare": "Descriere detaliată a modelului de business: tip (SaaS/marketplace/transactional/hardware+software), pricing tiers (ex: $299/lună SMB, $2,000/lună mid-market, enterprise custom), unit economics estimate (CAC, LTV, LTV:CAC ratio target), și strategia de expansiune a veniturilor (expansion revenue, upsell, ecosystem lock-in).",
-  
-  "go_to_market": "Plan GTM în 3 faze distincte: FAZA 1 (0-6 luni): canal de achiziție primar, ICP (Ideal Customer Profile) cu titlu exact și industrie, strategie de pilot/POC și pricing de penetrare. FAZA 2 (6-18 luni): scalare prin parteneriate strategice sau channel sales, geografii prioritare, metrici de succes (ex: 50 clienți paying, $500K ARR). FAZA 3 (18-36 luni): expansiune internațională sau verticală, potențial platform play sau ecosystem development.",
-  
+  "model_monetizare": "Descriere detaliată a modelului de business: tip (SaaS/marketplace/transactional/hardware+software), pricing tiers, unit economics estimate (CAC, LTV, LTV:CAC ratio target), și strategia de expansiune a veniturilor.",
+  "go_to_market": "Plan GTM în 3 faze distincte: FAZA 1 (0-6 luni), FAZA 2 (6-18 luni), FAZA 3 (18-36 luni).",
   "competitori": [
     {"nume": "<Competitor 1 real din piață>", "stadiu": "<ex: Series B, $45M raised>", "weakness": "<punctul vulnerabil exploatabil>"},
     {"nume": "<Competitor 2>", "stadiu": "<ex: IPO, $340M ARR>", "weakness": "<gap strategic>"},
     {"nume": "<Competitor 3>", "stadiu": "<ex: Bootstrap, nișă locală>", "weakness": "<limitare de scalare>"}
   ],
-  
-  "avantaj_defensibil": "Ce face această soluție greu de replicat pe termen lung? (ex: network effects, proprietary data moat, regulatory certifications, switching costs, distribution exclusivity, patent landscape, etc.) Descrieți mecanismul concret.",
-  
+  "avantaj_defensibil": "Ce face această soluție greu de replicat pe termen lung?",
   "riscuri": [
-    {"risc": "<Risc 1 - ex: Regulatory>", "impact": "<High/Medium/Low>", "mitigare": "<Strategie concretă de mitigare>"},
-    {"risc": "<Risc 2 - ex: Adoption>", "impact": "<High/Medium/Low>", "mitigare": "<Strategie concretă>"},
-    {"risc": "<Risc 3 - ex: Competition>", "impact": "<Medium>", "mitigare": "<Strategie concretă>"}
+    {"risc": "<Risc 1>", "impact": "<High/Medium/Low>", "mitigare": "<Strategie concretă de mitigare>"},
+    {"risc": "<Risc 2>", "impact": "<High/Medium/Low>", "mitigare": "<Strategie concretă>"},
+    {"risc": "<Risc 3>", "impact": "<Medium>", "mitigare": "<Strategie concretă>"}
   ],
-  
-  "stack_recomandat": "<Stack tehnologic optim pentru execuție rapidă și scalabilitate: ex: 'Backend: Python/FastAPI + PostgreSQL + Redis. ML: PyTorch + Hugging Face. Infra: AWS (EKS + RDS). Frontend: React + TypeScript. Integrări: Plaid, Stripe, Salesforce CRM.'>",
-  
+  "stack_recomandat": "<Stack tehnologic optim pentru execuție rapidă și scalabilitate>",
   "indicatori_succes": [
-    "<KPI 1 cu target specific, ex: MRR Growth Rate >15% MoM în primele 12 luni>",
-    "<KPI 2 ex: NPS > 60 la 6 luni post-launch>",
-    "<KPI 3 ex: CAC Payback Period < 12 luni>",
-    "<KPI 4 ex: Churn < 2% MoM>"
+    "<KPI 1 cu target specific>",
+    "<KPI 2>",
+    "<KPI 3>",
+    "<KPI 4>"
   ],
-  
-  "potentiali_achizitori": "<Lista de 3-4 companii strategice sau PE funds care ar fi interesate să achiziționeze această companie la exit, cu raționalul strategic pentru fiecare>",
-  
-  "verdict_executiv": "Paragraf final de 3-4 propoziții: recomandarea clară a echipei de analiză, fereastra de oportunitate (urgența acțiunii), și ce tip de fondator/echipă este ideal pentru execuție. Formulați ca un verdict de investment committee."
+  "potentiali_achizitori": "<Lista de 3-4 companii strategice sau PE funds care ar fi interesate să achiziționeze această companie la exit>",
+  "verdict_executiv": "Paragraf final de 3-4 propoziții: recomandarea clară a echipei de analiză, fereastra de oportunitate și ce tip de fondator/echipă este ideal pentru execuție."
 }`;
 
   const userMessage = `SECTOR: ${sector}
@@ -746,8 +746,7 @@ Generați un raport strategic complet și extrem de detaliat. Fiți specific, fo
       })
     });
 
-    const latency = Date.now() - t0;
-    document.getElementById('api-latency').textContent = latency;
+    document.getElementById('api-latency').textContent = Date.now() - t0;
 
     if(res.status === 403){
       document.getElementById('paywallModal').style.display = 'flex';
@@ -810,19 +809,16 @@ function renderResult(jsonStr){
 
   document.getElementById('result-grid').innerHTML = `
     <div class="r-grid">
-
       <div class="r-card full accent fade-in stagger-1">
         <div class="r-label">Oportunitate Identificată</div>
         <div class="r-val">${r.oportunitate||'—'}</div>
       </div>
-
       <div class="r-card fade-in stagger-1">
         <div class="r-label">Valoare Exit Estimată</div>
         <div class="r-big">$${r.valoare_min||'?'}–${r.valoare_max||'?'}M</div>
         <div style="font-size:11px;color:var(--muted);margin-top:8px">ARR Potențial (5 ani): <strong style="color:var(--gold)">${r.arr_potential||'—'}</strong></div>
         <div style="font-size:11px;color:var(--muted)">Multiplicator: <strong style="color:var(--gold)">${r.multiplicator||'—'}</strong></div>
       </div>
-
       <div class="r-card fade-in stagger-2">
         <div class="r-label">Scor Oportunitate</div>
         <div class="r-big" style="background:linear-gradient(135deg,${scoreColor},var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${score}/100</div>
@@ -832,95 +828,93 @@ function renderResult(jsonStr){
           <span style="font-size:11px;color:var(--muted)">Break-even: ${r.timp_break_even||'—'}</span>
         </div>
       </div>
-
       <div class="r-card full fade-in stagger-2">
         <div class="r-label">Model de Monetizare</div>
         <div class="r-val">${r.model_monetizare||'—'}</div>
       </div>
-
       <div class="r-card full fade-in stagger-3">
         <div class="r-label">Strategie Go-To-Market</div>
         <div class="r-val">${r.go_to_market||'—'}</div>
       </div>
-
       <div class="r-card fade-in stagger-3">
         <div class="r-label">Peisaj Competitiv</div>
         <div class="competitors-grid">${compHTML||'<div class="r-val">—</div>'}</div>
       </div>
-
       <div class="r-card fade-in stagger-3">
         <div class="r-label">Avantaj Defensibil</div>
         <div class="r-val">${r.avantaj_defensibil||'—'}</div>
       </div>
-
       <div class="r-card fade-in stagger-3">
         <div class="r-label">Matrice Riscuri</div>
         ${risksHTML}
       </div>
-
       <div class="r-card fade-in stagger-3">
         <div class="r-label">KPI & Indicatori Succes</div>
         ${kpiHTML}
       </div>
-
       <div class="r-card fade-in stagger-3">
         <div class="r-label">Stack Tehnologic Recomandat</div>
         <div class="r-val">${r.stack_recomandat||'—'}</div>
       </div>
-
       <div class="r-card fade-in stagger-3">
         <div class="r-label">Potențiali Achizitori / Exit Targets</div>
         <div class="r-val">${r.potentiali_achizitori||'—'}</div>
       </div>
-
       <div class="r-card full dark fade-in stagger-3" style="border-color:rgba(201,168,76,0.3)">
         <div class="r-label" style="color:var(--gold)">Verdict Executiv</div>
         <div class="r-val" style="font-size:14px;font-style:italic;color:var(--text)">"${r.verdict_executiv||'—'}"</div>
       </div>
-
     </div>`;
 
   document.getElementById('result-section').style.display = 'block';
   document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
 }
-/* ===================== PDF ===================== */
+
+/* =====================================================
+   FIX #1 + FIX #2 — downloadPDF UNICĂ ȘI CORECTĂ
+   ─────────────────────────────────────────────────
+   • O singură funcție (duplicata și codul orfan au
+     fost eliminate complet).
+   • innerHTML este setat ÎNAINTE de setTimeout.
+   • setTimeout de 500ms lasă browserul să randeze
+     textul în #pdf-render (off-screen) înainte ca
+     html2pdf să facă captura — fix pentru PDF gol.
+   ===================================================== */
 function downloadPDF(){
-  if(!lastResult) return alert("Eroare: Nu există date pentru raport!");
-  
+  if(!lastResult) return alert('Eroare: Nu există date pentru raport!');
+
   const r = lastResult;
   const el = document.getElementById('pdf-render');
-  
-  // Pregătim conținutul special pentru PDF
-  el.style.display = 'block';
+
+  /* Pasul 1 — Injectăm conținutul HTML în elementul off-screen */
   el.innerHTML = `
-    <div style="font-family: Arial, sans-serif; color: #111; padding: 40px; background: white; min-height: 1000px;">
-      <div style="border-bottom: 3px solid #c9a84c; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h1 style="font-size: 28px; margin: 0; color: #111;">ORACLE AI STRATEGIC REPORT</h1>
-          <p style="color: #888; font-size: 10px; text-transform: uppercase; margin-top: 5px;">Enterprise Intelligence · v4.2 · ${new Date().toLocaleDateString()}</p>
-        </div>
-      </div>
-      
-      ${buildPDFSection('OPORTUNITATE STRATEGICĂ', r.oportunitate)}
-      
-      <div style="display: flex; gap: 20px; margin-bottom: 25px;">
-        <div style="flex: 1; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-          <p style="font-size: 9px; color: #888; text-transform: uppercase;">EXIT VALUE ESTIMATE</p>
-          <p style="font-size: 24px; font-weight: bold; color: #c9a84c; margin: 5px 0;">$${r.valoare_min}-${r.valoare_max}M</p>
-        </div>
-        <div style="flex: 1; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-          <p style="font-size: 9px; color: #888; text-transform: uppercase;">SCOR OPORTUNITATE</p>
-          <p style="font-size: 24px; font-weight: bold; color: #c9a84c; margin: 5px 0;">${r.scor_oportunitate}/100</p>
-        </div>
+    <div style="font-family:Arial,sans-serif;color:#111;padding:50px;background:white;">
+      <div style="border-bottom:4px solid #c9a84c;padding-bottom:20px;margin-bottom:30px;">
+        <h1 style="font-size:32px;margin:0;color:#000;">ORACLE AI — RAPORT STRATEGIC</h1>
+        <p style="color:#666;font-size:11px;text-transform:uppercase;margin-top:10px;letter-spacing:0.1em;">
+          Enterprise Intelligence · Confidențial · ${new Date().toLocaleDateString('ro-RO')}
+        </p>
       </div>
 
-      ${buildPDFSection('ARHITECTURĂ TEHNICĂ RECOMANDATĂ', r.stack_recomandat)}
-      ${buildPDFSection('MODEL DE MONETIZARE & UNIT ECONOMICS', r.model_monetizare)}
-      ${buildPDFSection('STRATEGIE GO-TO-MARKET', r.gtm)}
-      ${buildPDFSection('VERDICT EXECUTIV / INVESTMENT CASE', r.verdict_executiv)}
+      ${buildPDFSection('Oportunitate Strategică', r.oportunitate)}
 
-      <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; font-size: 9px; color: #aaa;">
-        © ${new Date().getFullYear()} Oracle AI Enterprise · Document Confidențial · Generat de Oracle Intelligence Engine
+      <div style="display:flex;gap:20px;margin-bottom:30px;">
+        ${buildPDFBox('Valoare Exit (5 ani)', `$${r.valoare_min}–${r.valoare_max}M`)}
+        ${buildPDFBox('ARR Potențial', r.arr_potential || '—')}
+        ${buildPDFBox('Scor Oportunitate', `${r.scor_oportunitate || '—'}/100`)}
+        ${buildPDFBox('Break-even', r.timp_break_even || '—')}
+      </div>
+
+      ${buildPDFSection('Model de Monetizare & Unit Economics', r.model_monetizare)}
+      ${buildPDFSection('Strategie Go-To-Market', r.go_to_market)}
+      ${buildPDFSection('Avantaj Defensibil', r.avantaj_defensibil)}
+      ${buildPDFSection('Stack Tehnologic Recomandat', r.stack_recomandat)}
+      ${buildPDFSection('Potențiali Achizitori / Exit Targets', r.potentiali_achizitori)}
+      ${buildPDFSection('Verdict Executiv / Investment Case', r.verdict_executiv)}
+
+      <div style="margin-top:50px;padding-top:20px;border-top:1px solid #eee;font-size:9px;color:#aaa;display:flex;justify-content:space-between;">
+        <span>© ${new Date().getFullYear()} Oracle AI Enterprise · Document Confidențial</span>
+        <span>Generat de Oracle Intelligence Engine v4.2</span>
       </div>
     </div>`;
 
@@ -932,20 +926,38 @@ function downloadPDF(){
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
   };
 
-  // Pauză de 500ms pentru a lăsa browserul să randeze textul înainte de "poza" PDF
+  /*
+   * Pasul 2 — FIX #2: setTimeout 500ms
+   * Browserul trebuie să termine de randat textul în elementul
+   * off-screen înainte ca html2pdf să facă "poza". Fără această
+   * pauză, captura se face pe un element gol → PDF gol.
+   */
   setTimeout(() => {
     html2pdf().set(opt).from(el).save().then(() => {
-      el.style.display = 'none';
+      el.innerHTML = ''; /* curățăm după export */
     });
   }, 500);
 }
 
+/* ===================== PDF HELPERS ===================== */
 function buildPDFSection(title, content){
-  return `<div style="margin-bottom:24px"><div style="font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#c9a84c;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0e8d5">${title}</div><div style="font-size:13px;line-height:1.75;color:#333">${content||'—'}</div></div>`;
+  if(!content) return '';
+  return `
+    <div style="margin-bottom:24px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;
+                  color:#c9a84c;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0e8d5;">
+        ${title}
+      </div>
+      <div style="font-size:13px;line-height:1.75;color:#333;">${content}</div>
+    </div>`;
 }
 
 function buildPDFBox(label, val){
-  return `<div style="border:1px solid #eee;border-radius:8px;padding:16px"><div style="font-size:9px;color:#888;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px">${label}</div><div style="font-size:22px;font-weight:700;color:#c9a84c">${val}</div></div>`;
+  return `
+    <div style="flex:1;border:1px solid #eee;border-radius:8px;padding:16px;text-align:center;">
+      <div style="font-size:9px;color:#888;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">${label}</div>
+      <div style="font-size:20px;font-weight:700;color:#c9a84c;">${val}</div>
+    </div>`;
 }
 
 /* ===================== UTILS ===================== */
