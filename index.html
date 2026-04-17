@@ -178,7 +178,7 @@
 
     async function signOut() { await sb.auth.signOut(); location.reload(); }
 
-    async function run() {
+   async function run() {
         const prob = document.getElementById('prob').value.trim();
         if(!sector || !prob) return alert("Selectează industria și scrie problema!");
         
@@ -188,11 +188,25 @@
         term.style.display = 'block';
         term.innerHTML = `> Inițializare Oracle v2.0...<br>> Verificare credite pentru ${currentUser.email}...`;
 
+        // INSTRUCTIUNI ULTRA-STRICTE PENTRU AI
+        const promptStrict = `Ești un expert McKinsey. Analizează problema și răspunde EXCLUSIV sub formă de obiect JSON, respectând EXACT aceste chei:
+        "gap": "descriere scurtă a oportunității",
+        "valoare_min": 10,
+        "valoare_max": 50,
+        "dificultate": "Scăzută/Medie/Ridicată",
+        "monetizare": "explicație scurtă a modelului de business".
+        Nu adăuga niciun alt text în afara de JSON.`;
+
         try {
             const res = await fetch('/api/oracle', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ sector, prob, email: currentUser.email, systemPrompt: "Ești un expert McKinsey. Răspunde DOAR JSON..." })
+                body: JSON.stringify({ 
+                    sector, 
+                    prob, 
+                    email: currentUser.email, 
+                    systemPrompt: promptStrict // Trimitem noul prompt strict
+                })
             });
 
             if(res.status === 403) {
@@ -201,10 +215,15 @@
             }
 
             const data = await res.json();
+            console.log("Date primite de la AI:", data); // Vedem in consola ce a raspuns
+
             term.innerHTML += `<br>> Analiză completă. Randare rezultate...`;
             render(data);
             refreshCredits();
-        } catch(e) { alert("Eroare server!"); }
+        } catch(e) { 
+            console.error(e);
+            alert("Eroare server! Verificați consola (F12)."); 
+        }
         btn.disabled = false;
     }
 
@@ -212,10 +231,10 @@
         document.getElementById('result').style.display = 'block';
         document.getElementById('result').innerHTML = `
             <div class="r-grid">
-                <div class="r-cell full"><div class="r-lbl">GAP IDENTIFICAT</div><div class="r-val">${r.gap}</div></div>
-                <div class="r-cell"><div class="r-lbl">VALOARE ESTIMATĂ</div><div class="r-big">$${r.valoare_min}-${r.valoare_max}M</div></div>
-                <div class="r-cell"><div class="r-lbl">DIFICULTATE</div><div class="r-big" style="font-size:18px">${r.dificultate}</div></div>
-                <div class="r-cell full"><div class="r-lbl">ARHITECTURĂ ȘI MONETIZARE</div><div class="r-val">${r.monetizare}</div></div>
+                <div class="r-cell full"><div class="r-lbl">GAP IDENTIFICAT</div><div class="r-val">${r.gap || 'N/A'}</div></div>
+                <div class="r-cell"><div class="r-lbl">VALOARE ESTIMATĂ</div><div class="r-big">$${r.valoare_min || 0}-${r.valoare_max || 0}M</div></div>
+                <div class="r-cell"><div class="r-lbl">DIFICULTATE</div><div class="r-big" style="font-size:18px">${r.dificultate || 'Medie'}</div></div>
+                <div class="r-cell full"><div class="r-lbl">ARHITECTURĂ ȘI MONETIZARE</div><div class="r-val">${r.monetizare || 'N/A'}</div></div>
             </div>`;
     }
 </script>
