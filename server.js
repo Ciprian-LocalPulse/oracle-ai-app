@@ -22,7 +22,15 @@ const openai = new OpenAI({
 
 app.post('/api/oracle', async (req, res) => {
   const { sector, prob, systemPrompt, email } = req.body; // <--- Primim și email-ul acum
-
+// SALVARE ÎN ARHIVĂ
+await supabase
+  .from('analyses')
+  .insert([{ 
+    user_email: email, 
+    sector: sector, 
+    problem: prob, 
+    full_response: JSON.parse(resultText) 
+  }]);
   try {
     // 1. Verificăm în baza de date dacă userul mai are credite
     let { data: profile, error } = await supabase
