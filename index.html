@@ -86,17 +86,19 @@
 </div>
 
 <script>
-    // CONFIGURARE SUPABASE - INLOCUIESTE CU DATELE TALE!
+    // CONFIGURARE SUPABASE - ASIGURĂ-TE CĂ AI PUS DATELE TALE ÎNTRE GHILIMELE!
     const SB_URL = "https://oiotboqjukamwijfmheo.supabase.co"; 
     const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v";
-    const supabase = supabase.createClient(SB_URL, SB_KEY);
+    
+    // Am schimbat numele variabilei în 'sb' ca să nu se mai bată cap în cap cu librăria
+    const sb = supabase.createClient(SB_URL, SB_KEY);
 
     let isLoginMode = true;
     let currentUser = null;
 
-    // 1. Verificăm dacă userul este deja logat la deschiderea paginii
+    // Verificăm dacă userul este deja logat
     window.onload = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await sb.auth.getSession();
         if (session) {
             setupUI(session.user);
         }
