@@ -1,301 +1,963 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oracle AI - Enterprise Intelligence</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
-    <style>
-        *{box-sizing:border-box;margin:0;padding:0}
-        :root{
-            --ink:#0a0a0a;--paper:#f5f3ee;--accent:#c8562a;--accent2:#1a3a5c;
-            --line:rgba(0,0,0,0.1);--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;
-        }
-        body { background: var(--paper); color: var(--ink); font-family: var(--mono); }
-        .w{max-width: 1100px; margin: 0 auto; min-height:100vh; padding:2rem; position:relative}
-        .w::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-        
-        /* AUTH UI */
-        #auth-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-        .auth-card { background: white; padding: 3rem; border-radius: 12px; border: 1px solid var(--line); width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
-        .auth-logo { font-family: var(--display); font-size: 36px; font-weight: 800; margin-bottom: 2rem; }
-        .auth-logo span { color: var(--accent); }
-        .auth-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); outline: none; background: #fafafa; }
-        .auth-btn { width: 100%; padding: 16px; background: var(--ink); color: white; border: none; border-radius: 6px; font-family: var(--display); font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .auth-btn:hover { background: var(--accent); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORACLE AI — Enterprise Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;900&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-        #app-content { display: none; }
-        .header{display:flex;align-items:baseline;gap:16px;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--line)}
-        .logo{font-family:var(--display);font-size:28px;font-weight:800;color:var(--ink)}
-        .user-info { margin-left: auto; font-size: 11px; text-align: right; }
-        .logout-link { color: var(--accent); cursor: pointer; text-decoration: underline; }
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
 
-        .main-layout { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; }
-        
-        .sectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.5rem}
-        .s-btn{background:white;border:1px solid var(--line);border-radius:8px;padding:15px 5px;cursor:pointer;text-align:center;transition:0.2s}
-        .s-btn.sel{background:var(--ink);color:white;border-color:var(--ink)}
-        .s-ico{font-size:20px;display:block;margin-bottom:5px}
-        .s-lbl{font-size:9px;font-weight:700;text-transform:uppercase}
+:root{
+  --void:#04050a;
+  --deep:#080c14;
+  --surface:#0d1321;
+  --glass:rgba(255,255,255,0.03);
+  --glass2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.14);
+  --gold:#c9a84c;
+  --gold2:#f5d78e;
+  --amber:#e8932a;
+  --red:#e05252;
+  --teal:#2ec4b6;
+  --blue:#4a90d9;
+  --text:#e8eaf0;
+  --muted:#7a8199;
+  --mono:'DM Mono',monospace;
+  --display:'Barlow',sans-serif;
+  --condensed:'Barlow Condensed',sans-serif;
+  --bigfont:'Bebas Neue',sans-serif;
+}
 
-        textarea{width:100%;background:white;border:1px solid var(--line);border-radius:8px;padding:20px;font-family:var(--mono);font-size:14px;height:120px;outline:none;margin-bottom:1rem}
+html,body{min-height:100%;background:var(--void);color:var(--text);font-family:var(--mono);overflow-x:hidden}
 
-        .run-btn{width:100%;background:var(--ink);color:white;padding:20px;border:none;border-radius:8px;font-family:var(--display);font-size:16px;font-weight:800;cursor:pointer}
-        .run-btn:hover{background:var(--accent)}
+/* === ANIMATED BACKGROUND === */
+.bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.grid-lines{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(201,168,76,0.04) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(201,168,76,0.04) 1px,transparent 1px);
+  background-size:60px 60px;animation:gridshift 20s linear infinite}
+@keyframes gridshift{0%{background-position:0 0}100%{background-position:60px 60px}}
 
-        .terminal{background:#0a0c10;color:#00ff41;padding:1rem;border-radius:8px;margin-top:1rem;font-size:11px;display:none;font-family:var(--mono)}
-        
-        /* Rezultate & PDF */
-        .result{margin-top:2rem;display:none;}
-        .r-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;background-color: white;}
-        .r-cell{background:white;padding:1.5rem}
-        .r-cell.full{grid-column:1/-1}
-        .r-lbl{font-size:10px;color:var(--accent);font-weight:800;margin-bottom:8px;text-transform:uppercase}
-        .r-val{font-size:13px;line-height:1.6;color:#333}
-        .r-big{font-family:var(--display);font-size:28px;font-weight:800}
+.glow-orb{position:absolute;border-radius:50%;filter:blur(120px);animation:orb-drift 25s ease-in-out infinite alternate}
+.orb1{width:600px;height:600px;background:rgba(201,168,76,0.06);top:-200px;right:-100px}
+.orb2{width:400px;height:400px;background:rgba(78,144,217,0.05);bottom:-100px;left:-50px;animation-delay:-12s}
+.orb3{width:300px;height:300px;background:rgba(46,196,182,0.04);top:50%;left:50%;animation-delay:-6s}
+@keyframes orb-drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.1)}100%{transform:translate(-20px,50px) scale(0.9)}}
 
-        .pdf-btn { margin-top: 15px; background: #2d2d2d; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.scanline{position:absolute;top:-100%;left:0;right:0;height:200%;background:linear-gradient(transparent,rgba(201,168,76,0.015) 50%,transparent);animation:scan 8s linear infinite;pointer-events:none}
+@keyframes scan{0%{top:-100%}100%{top:100%}}
 
-        /* Arhiva (Sidebar) */
-        .history-panel { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--line); height: fit-content; }
-        .history-item { padding: 12px; border-bottom: 1px solid var(--line); cursor: pointer; transition: 0.2s; }
-        .history-item:hover { background: #fafafa; border-radius: 6px; }
-        .h-date { font-size: 9px; color: var(--accent); font-weight: 700; }
-        .h-title { font-size: 11px; font-weight: 700; margin: 4px 0; }
+/* === PARTICLE STREAM === */
+#particles{position:absolute;inset:0}
 
-        /* Paywall */
-        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;justify-content:center;align-items:center;backdrop-filter:blur(8px)}
-        .modal{background:var(--paper);padding:3rem;border-radius:16px;max-width:450px;text-align:center;border:1px solid var(--accent)}
-        .stripe-btn{display:block;background:#635bff;color:white;padding:18px;border-radius:8px;text-decoration:none;font-weight:800;margin-top:2rem}
-        /* Ajustare specială pentru conținutul PDF */
-    #pdf-content {
-        padding: 40px;
-        background: white;
-        color: #000 !important; /* Forțăm textul negru pe PDF */
-    }
+/* === LAYOUT === */
+.app{position:relative;z-index:1;min-height:100vh}
+.wrap{max-width:1400px;margin:0 auto;padding:0 40px}
 
-    #pdf-content .r-grid {
-        display: block !important; /* Transformăm grila în listă pentru PDF ca să nu se bug-uiască */
-    }
+/* === TOP TICKER === */
+.ticker-bar{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:8px 0;overflow:hidden;position:relative}
+.ticker-inner{display:flex;gap:0;animation:ticker 30s linear infinite;white-space:nowrap}
+.ticker-item{display:inline-flex;align-items:center;gap:12px;padding:0 40px;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em}
+.ticker-item .t-label{color:var(--gold);font-weight:500}
+.ticker-item .t-up{color:#4caf50}
+.ticker-item .t-down{color:var(--red)}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-    #pdf-content .r-cell {
-        margin-bottom: 20px;
-        border-bottom: 1px solid #eee;
-        page-break-inside: avoid; /* Să nu se taie celula între pagini */
-    }
-    </style>
+/* === HEADER === */
+.header{display:flex;align-items:center;padding:28px 0;border-bottom:1px solid var(--border);gap:40px}
+.logo-block{display:flex;align-items:center;gap:16px}
+.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--gold),var(--amber));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 0 30px rgba(201,168,76,0.3)}
+.logo-text{font-family:var(--bigfont);font-size:36px;letter-spacing:0.08em;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-top:2px}
+.header-center{flex:1;display:flex;justify-content:center;gap:40px}
+.stat-pill{text-align:center}
+.stat-pill .sp-num{font-family:var(--bigfont);font-size:22px;color:var(--gold);letter-spacing:0.05em}
+.stat-pill .sp-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em}
+.header-right{display:flex;align-items:center;gap:20px}
+.user-badge{background:var(--glass2);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:11px;text-align:right}
+.user-badge .ub-email{color:var(--gold);font-weight:500}
+.user-badge .ub-credits{color:var(--teal);font-size:14px;font-weight:600}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--mono);letter-spacing:0.1em;transition:all 0.2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* === AUTH SCREEN === */
+#auth-container{display:flex;justify-content:center;align-items:center;min-height:90vh;position:relative;z-index:1}
+.auth-card{background:rgba(13,19,33,0.9);border:1px solid var(--border2);border-radius:16px;padding:3.5rem;width:100%;max-width:440px;backdrop-filter:blur(20px);box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(201,168,76,0.1)}
+.auth-logo-big{font-family:var(--bigfont);font-size:64px;letter-spacing:0.1em;background:linear-gradient(135deg,var(--gold2),var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px}
+.auth-tagline{font-size:10px;color:var(--muted);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:3rem}
+.auth-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px}
+.auth-input{width:100%;background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;margin-bottom:16px;transition:all 0.2s}
+.auth-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1)}
+.auth-btn-main{width:100%;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;border:none;border-radius:8px;padding:18px;font-family:var(--condensed);font-size:16px;font-weight:900;letter-spacing:0.15em;cursor:pointer;transition:all 0.3s;margin-top:8px;position:relative;overflow:hidden}
+.auth-btn-main::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.2),transparent);transform:translateX(-100%);transition:0.5s}
+.auth-btn-main:hover::after{transform:translateX(100%)}
+.auth-btn-main:hover{box-shadow:0 0 40px rgba(201,168,76,0.4),0 0 80px rgba(201,168,76,0.2)}
+.auth-switch-link{color:var(--gold);font-size:11px;cursor:pointer;text-align:center;margin-top:1.5rem;display:block;text-decoration:none;transition:color 0.2s}
+.auth-switch-link:hover{color:var(--gold2)}
+.auth-separator{display:flex;align-items:center;gap:16px;margin:24px 0}
+.auth-separator::before,.auth-separator::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-separator span{font-size:10px;color:var(--muted);letter-spacing:0.1em}
+
+/* === MAIN APP === */
+#app-content{display:none}
+.main-layout{display:grid;grid-template-columns:1fr 320px;gap:32px;padding-top:32px}
+
+/* === SECTOR SELECTOR === */
+.section-label{font-size:10px;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.sectors{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px}
+.s-btn{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:16px 8px;cursor:pointer;text-align:center;transition:all 0.25s;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:6px}
+.s-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--gold),var(--amber));opacity:0;transition:opacity 0.25s}
+.s-btn.sel{border-color:var(--gold);box-shadow:0 0 20px rgba(201,168,76,0.2),inset 0 0 20px rgba(201,168,76,0.05)}
+.s-btn.sel::before{opacity:0.08}
+.s-ico{font-size:22px;position:relative;z-index:1}
+.s-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;position:relative;z-index:1;color:var(--muted);transition:color 0.25s}
+.s-btn.sel .s-lbl{color:var(--gold)}
+.s-btn:hover{border-color:var(--border2);transform:translateY(-2px)}
+
+/* === TEXTAREA === */
+.input-wrapper{position:relative;margin-bottom:20px}
+.input-wrapper textarea{width:100%;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.7;height:130px;outline:none;resize:none;transition:all 0.2s}
+.input-wrapper textarea:focus{border-color:rgba(201,168,76,0.4);box-shadow:0 0 0 3px rgba(201,168,76,0.07)}
+.input-wrapper textarea::placeholder{color:var(--muted)}
+.input-corner{position:absolute;bottom:16px;right:16px;font-size:10px;color:var(--muted)}
+
+/* === ADVANCED OPTIONS === */
+.adv-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+.adv-select{background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;cursor:pointer;width:100%;transition:border-color 0.2s}
+.adv-select:focus{border-color:var(--gold)}
+option{background:var(--deep)}
+
+/* === RUN BUTTON === */
+.run-area{position:relative}
+.run-btn{width:100%;background:linear-gradient(135deg,#1a1a2e,#16213e);color:var(--gold);border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:22px;font-family:var(--condensed);font-size:18px;font-weight:900;letter-spacing:0.2em;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:12px;position:relative;overflow:hidden}
+.run-btn::before{content:'';position:absolute;inset:-1px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--amber),var(--teal));opacity:0;transition:opacity 0.3s;z-index:0}
+.run-btn::after{content:'';position:absolute;inset:1px;border-radius:11px;background:linear-gradient(135deg,#0d1321,#0a0f1e);z-index:1}
+.run-btn span{position:relative;z-index:2}
+.run-btn:hover::before{opacity:1}
+.run-btn:hover{box-shadow:0 0 40px rgba(201,168,76,0.25),0 0 80px rgba(201,168,76,0.1)}
+.run-btn:disabled{opacity:0.5;cursor:not-allowed}
+.run-btn .pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse-dot 1.5s ease infinite;display:none}
+.run-btn.loading .pulse-dot{display:block}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.6)}}
+
+/* === TERMINAL === */
+.terminal{background:#020408;border:1px solid rgba(46,196,182,0.2);border-radius:10px;padding:16px 20px;margin-top:16px;font-size:11px;display:none;font-family:var(--mono);box-shadow:0 0 30px rgba(46,196,182,0.05),inset 0 0 30px rgba(0,0,0,0.5)}
+.term-line{color:#3a9e94;line-height:2;display:flex;align-items:center;gap:8px;opacity:0;animation:term-in 0.3s forwards}
+.term-line.done{color:#2ec4b6}
+.term-line.warn{color:var(--gold)}
+.term-line.err{color:var(--red)}
+@keyframes term-in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.term-cursor{display:inline-block;width:8px;height:14px;background:var(--teal);animation:blink 1s step-end infinite;vertical-align:middle}
+@keyframes blink{50%{opacity:0}}
+
+/* === RESULT === */
+.result-section{margin-top:28px;display:none}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.result-title{font-family:var(--bigfont);font-size:20px;letter-spacing:0.12em;color:var(--gold)}
+.result-meta{font-size:10px;color:var(--muted)}
+
+.r-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.r-card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:22px;transition:all 0.3s;position:relative;overflow:hidden}
+.r-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.3s}
+.r-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.r-card:hover::before{opacity:1}
+.r-card.full{grid-column:1/-1}
+.r-card.accent{background:linear-gradient(135deg,rgba(201,168,76,0.05),rgba(232,147,42,0.05));border-color:rgba(201,168,76,0.2)}
+.r-card.dark{background:rgba(0,0,0,0.3)}
+.r-label{font-size:9px;color:var(--gold);font-weight:600;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.r-label::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--gold)}
+.r-val{font-size:13px;line-height:1.75;color:rgba(232,234,240,0.85)}
+.r-big{font-family:var(--bigfont);font-size:42px;letter-spacing:0.05em;background:linear-gradient(135deg,var(--gold2),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.r-score-bar{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;margin-top:12px;overflow:hidden}
+.r-score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width 1.5s cubic-bezier(0.16,1,0.3,1)}
+.risk-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:0.1em}
+.risk-h{background:rgba(224,82,82,0.15);border:1px solid rgba(224,82,82,0.3);color:var(--red)}
+.risk-m{background:rgba(232,147,42,0.15);border:1px solid rgba(232,147,42,0.3);color:var(--amber)}
+.risk-l{background:rgba(46,196,182,0.15);border:1px solid rgba(46,196,182,0.3);color:var(--teal)}
+
+.list-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6}
+.list-item:last-child{border-bottom:none}
+.list-num{color:var(--gold);font-weight:600;min-width:20px;font-family:var(--condensed);font-size:14px}
+.competitors-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.comp-pill{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px}
+.comp-pill .cp-name{font-weight:600;color:var(--text)}
+.comp-pill .cp-stage{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.08em}
+
+/* === INDICATORS STRIP === */
+.indicators{display:flex;gap:1px;background:var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.ind-item{flex:1;background:var(--surface);padding:12px;text-align:center}
+.ind-val{font-family:var(--bigfont);font-size:18px;letter-spacing:0.05em}
+.ind-lbl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-top:2px}
+.ind-up{color:#4caf50}
+.ind-dn{color:var(--red)}
+.ind-nt{color:var(--gold)}
+
+/* === PDF / ACTIONS === */
+.actions-row{display:flex;gap:12px;margin-top:16px}
+.action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:8px;font-family:var(--condensed);font-size:13px;font-weight:700;letter-spacing:0.1em;cursor:pointer;border:1px solid var(--border);background:var(--glass);color:var(--text);transition:all 0.2s}
+.action-btn:hover{border-color:var(--gold);color:var(--gold)}
+.action-btn.primary{background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;border:none}
+.action-btn.primary:hover{box-shadow:0 0 30px rgba(201,168,76,0.3)}
+
+/* === SIDEBAR === */
+.sidebar{}
+.panel{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.panel-title{font-size:10px;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+.history-item{padding:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.2s;border-radius:6px;margin-bottom:4px}
+.history-item:last-child{border-bottom:none;margin-bottom:0}
+.history-item:hover{background:var(--glass2)}
+.hi-date{font-size:9px;color:var(--gold);letter-spacing:0.1em;margin-bottom:3px}
+.hi-sector{font-size:12px;font-weight:600;margin-bottom:2px;font-family:var(--condensed);letter-spacing:0.05em}
+.hi-preview{font-size:10px;color:var(--muted);line-height:1.4}
+.hi-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:8px;font-weight:600;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);color:var(--gold);margin-top:6px;letter-spacing:0.1em}
+
+/* === MARKET FEED === */
+.feed-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px}
+.feed-item:last-child{border-bottom:none}
+.fi-name{color:var(--text);font-weight:500}
+.fi-change{font-family:var(--mono);font-size:11px;font-weight:600}
+
+/* === PAYWALL === */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;justify-content:center;align-items:center;backdrop-filter:blur(12px)}
+.modal{background:var(--surface);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:3rem;max-width:480px;text-align:center;box-shadow:0 0 80px rgba(201,168,76,0.1),0 40px 80px rgba(0,0,0,0.6)}
+.modal-icon{font-size:56px;margin-bottom:1.5rem;display:block}
+.modal-title{font-family:var(--bigfont);font-size:40px;letter-spacing:0.1em;color:var(--gold);margin-bottom:12px}
+.modal-desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:2rem}
+.modal-features{list-style:none;text-align:left;margin-bottom:2rem;display:flex;flex-direction:column;gap:8px}
+.modal-features li{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)}
+.modal-features li::before{content:'✓';color:var(--gold);font-weight:700;font-size:14px}
+.stripe-btn{display:block;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;padding:20px;border-radius:10px;text-decoration:none;font-family:var(--condensed);font-size:18px;font-weight:900;letter-spacing:0.15em;transition:all 0.3s}
+.stripe-btn:hover{box-shadow:0 0 50px rgba(201,168,76,0.4);transform:translateY(-2px)}
+.modal-close{position:absolute;top:20px;right:20px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+
+/* === STATUS BAR === */
+.status-bar{display:flex;align-items:center;gap:20px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:32px}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#4caf50;box-shadow:0 0 8px rgba(76,175,80,0.8);animation:status-pulse 2s ease infinite}
+@keyframes status-pulse{0%,100%{box-shadow:0 0 8px rgba(76,175,80,0.8)}50%{box-shadow:0 0 16px rgba(76,175,80,0.4)}}
+.status-text{font-size:10px;color:var(--muted);letter-spacing:0.1em}
+.status-version{margin-left:auto;font-size:10px;color:var(--muted);font-family:var(--mono)}
+
+/* === RESPONSIVE === */
+@media(max-width:900px){.main-layout{grid-template-columns:1fr}.sidebar{display:none}.sectors{grid-template-columns:repeat(3,1fr)}}
+
+/* === ANIMATIONS === */
+.fade-in{opacity:0;transform:translateY(20px);animation:fadein 0.5s ease forwards}
+@keyframes fadein{to{opacity:1;transform:translateY(0)}}
+.stagger-1{animation-delay:0.1s}
+.stagger-2{animation-delay:0.2s}
+.stagger-3{animation-delay:0.3s}
+
+/* === PDF PRINT STYLES === */
+#pdf-render{background:white;color:#111;padding:50px;font-family:'Barlow',sans-serif;display:none}
+</style>
 </head>
 <body>
 
-<div class="w">
-    <div id="auth-container">
-        <div class="auth-card">
-            <div class="auth-logo">ORACLE<span>.</span>AI</div>
-            <input type="email" id="auth-email" class="auth-input" placeholder="Email corporat">
-            <input type="password" id="auth-password" class="auth-input" placeholder="Parola secretă">
-            <button class="auth-btn" onclick="handleAuth()">AUTENTIFICARE</button>
-            <div style="margin-top:20px; font-size:12px; cursor:pointer; text-decoration:underline" onclick="toggleAuthMode()" id="auth-switch">Creează cont nou</div>
-        </div>
-    </div>
-
-    <div id="app-content">
-        <div class="header">
-            <div class="logo">ORACLE<span>.</span>AI</div>
-            <div class="user-info">
-                <b id="user-email">...</b> | Credite: <b id="user-credits" style="color:var(--accent)">0</b>
-                <div class="logout-link" onclick="signOut()">Ieșire</div>
-            </div>
-        </div>
-
-        <div class="main-layout">
-            <div class="left-col">
-                <div class="sectors">
-                    <button class="s-btn" data-v="Logistică" onclick="sel(this)"><span class="s-ico">🚚</span><span class="s-lbl">Logistică</span></button>
-                    <button class="s-btn" data-v="FinTech" onclick="sel(this)"><span class="s-ico">🏦</span><span class="s-lbl">FinTech</span></button>
-                    <button class="s-btn" data-v="Energie" onclick="sel(this)"><span class="s-ico">⚡</span><span class="s-lbl">Energie</span></button>
-                    <button class="s-btn" data-v="Cybersec" onclick="sel(this)"><span class="s-ico">🔐</span><span class="s-lbl">Cybersec</span></button>
-                    <button class="s-btn" data-v="MedTech" onclick="sel(this)"><span class="s-ico">🏥</span><span class="s-lbl">MedTech</span></button>
-                </div>
-                <textarea id="prob" placeholder="Descrieți provocarea strategică..."></textarea>
-                <button class="run-btn" id="runBtn" onclick="run()">▶ LANSARE ANALIZĂ</button>
-                <div class="terminal" id="terminal"></div>
-
-                <div id="result-area">
-                    <div id="result" class="result">
-                        </div>
-                    <button id="pdfBtn" class="pdf-btn" style="display:none" onclick="downloadPDF()">
-                        📥 DESCARCĂ RAPORT PDF
-                    </button>
-                </div>
-            </div>
-
-            <div class="right-col">
-                <div class="history-panel">
-                    <div class="r-lbl" style="margin-bottom:15px">Arhiva Proiecte</div>
-                    <div id="history-list">
-                        <div style="font-size:11px; color:#999">Nicio analiză salvată încă.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- BACKGROUND -->
+<div class="bg-canvas">
+  <div class="grid-lines"></div>
+  <div class="glow-orb orb1"></div>
+  <div class="glow-orb orb2"></div>
+  <div class="glow-orb orb3"></div>
+  <div class="scanline"></div>
+  <canvas id="particles"></canvas>
 </div>
 
-<div class="modal-overlay" id="paywallModal">
-    <div class="modal">
-        <div style="font-size:50px">💎</div>
-        <h2>LIMITĂ ATINSĂ</h2>
-        <p>Ai epuizat analizele gratuite. Pentru acces nelimitat și rapoarte enterprise, activează abonamentul.</p>
-        <a href="https://buy.stripe.com/PUNE_LINK_UL_TAU_AICI" class="stripe-btn">DEBLOCARE PREMIUM - 19€</a>
+<div class="app">
+
+  <!-- TICKER -->
+  <div class="ticker-bar">
+    <div class="ticker-inner" id="ticker-inner">
+      <!-- duplicated for infinite scroll -->
     </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- AUTH -->
+    <div id="auth-container">
+      <div class="auth-card fade-in">
+        <div class="auth-logo-big">ORACLE.AI</div>
+        <div class="auth-tagline">Enterprise Intelligence Platform · v4.2</div>
+        <div class="auth-label">Email corporat</div>
+        <input type="email" id="auth-email" class="auth-input" placeholder="name@company.com" autocomplete="email">
+        <div class="auth-label">Parolă</div>
+        <input type="password" id="auth-password" class="auth-input" placeholder="••••••••••" autocomplete="current-password">
+        <button class="auth-btn-main" onclick="handleAuth()">
+          <span id="auth-btn-text">ACCESARE PLATFORMĂ</span>
+        </button>
+        <div class="auth-separator"><span>sau</span></div>
+        <a class="auth-switch-link" onclick="toggleAuthMode()" id="auth-switch">Nu ai cont? Creează acces enterprise</a>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app-content">
+
+      <!-- HEADER -->
+      <div class="header">
+        <div class="logo-block">
+          <div class="logo-icon">⚡</div>
+          <div>
+            <div class="logo-text">ORACLE.AI</div>
+            <div class="logo-sub">Enterprise Intelligence</div>
+          </div>
+        </div>
+        <div class="header-center">
+          <div class="stat-pill"><div class="sp-num" id="total-analyses">—</div><div class="sp-lbl">Analize Realizate</div></div>
+          <div class="stat-pill"><div class="sp-num" id="user-credits" style="color:var(--teal)">—</div><div class="sp-lbl">Credite Disponibile</div></div>
+          <div class="stat-pill"><div class="sp-num" style="color:#4caf50">LIVE</div><div class="sp-lbl">Sistem Activ</div></div>
+        </div>
+        <div class="header-right">
+          <div class="user-badge">
+            <div class="ub-email" id="user-email">...</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:0.1em">ENTERPRISE ACCOUNT</div>
+          </div>
+          <button class="logout-btn" onclick="signOut()">IEȘIRE</button>
+        </div>
+      </div>
+
+      <!-- STATUS BAR -->
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        <div class="status-text">Toate sistemele operaționale · Latență API: <span id="api-latency">—</span>ms</div>
+        <div class="status-version">Oracle Intelligence Engine v4.2.1 · Model: GPT-4o · Uptime: 99.97%</div>
+      </div>
+
+      <!-- MAIN -->
+      <div class="main-layout">
+        <div class="left-col">
+
+          <!-- SECTOR -->
+          <div class="section-label">Selectare Verticală</div>
+          <div class="sectors">
+            <button class="s-btn" data-v="Logistică & Supply Chain" onclick="sel(this)"><span class="s-ico">🚚</span><span class="s-lbl">Logistică</span></button>
+            <button class="s-btn" data-v="FinTech & Capital Markets" onclick="sel(this)"><span class="s-ico">🏦</span><span class="s-lbl">FinTech</span></button>
+            <button class="s-btn" data-v="Energie & CleanTech" onclick="sel(this)"><span class="s-ico">⚡</span><span class="s-lbl">Energie</span></button>
+            <button class="s-btn" data-v="Cybersecurity & AI Safety" onclick="sel(this)"><span class="s-ico">🔐</span><span class="s-lbl">Cybersec</span></button>
+            <button class="s-btn" data-v="MedTech & BioTech" onclick="sel(this)"><span class="s-ico">🧬</span><span class="s-lbl">MedTech</span></button>
+            <button class="s-btn" data-v="SaaS & Enterprise Software" onclick="sel(this)"><span class="s-ico">☁️</span><span class="s-lbl">SaaS</span></button>
+            <button class="s-btn" data-v="AI & Machine Learning" onclick="sel(this)"><span class="s-ico">🤖</span><span class="s-lbl">AI/ML</span></button>
+            <button class="s-btn" data-v="Real Estate & PropTech" onclick="sel(this)"><span class="s-ico">🏢</span><span class="s-lbl">PropTech</span></button>
+            <button class="s-btn" data-v="Retail & E-Commerce" onclick="sel(this)"><span class="s-ico">🛒</span><span class="s-lbl">eCommerce</span></button>
+            <button class="s-btn" data-v="Deep Tech & Hardware" onclick="sel(this)"><span class="s-ico">🔬</span><span class="s-lbl">DeepTech</span></button>
+          </div>
+
+          <!-- OPTIONS -->
+          <div class="section-label">Parametri Analiză</div>
+          <div class="adv-options">
+            <select class="adv-select" id="opt-market">
+              <option value="global">Piață: Global</option>
+              <option value="EU">Piață: Europa</option>
+              <option value="US">Piață: SUA</option>
+              <option value="APAC">Piață: APAC</option>
+              <option value="DACH">Piață: DACH</option>
+            </select>
+            <select class="adv-select" id="opt-stage">
+              <option value="early">Stadiu: Early-Stage</option>
+              <option value="growth">Stadiu: Growth</option>
+              <option value="enterprise">Stadiu: Enterprise</option>
+              <option value="M&A">Stadiu: M&A / Exit</option>
+            </select>
+            <select class="adv-select" id="opt-depth">
+              <option value="standard">Adâncime: Standard</option>
+              <option value="deep">Adâncime: Deep-Scan</option>
+              <option value="competitive">Adâncime: Competitive</option>
+            </select>
+          </div>
+
+          <!-- INPUT -->
+          <div class="section-label">Brief Strategic</div>
+          <div class="input-wrapper">
+            <textarea id="prob" placeholder="Descrieți în detaliu provocarea strategică, oportunitatea de piață sau problema operațională pe care doriți să o analizăm. Cu cât mai specific, cu atât analiza va fi mai valoroasă..."></textarea>
+            <div class="input-corner" id="char-count">0 / 2000</div>
+          </div>
+
+          <!-- RUN -->
+          <button class="run-btn" id="runBtn" onclick="run()">
+            <span class="pulse-dot"></span>
+            <span>▶ LANSARE ANALIZĂ DEEP-SCAN</span>
+          </button>
+
+          <!-- TERMINAL -->
+          <div class="terminal" id="terminal"></div>
+
+          <!-- RESULT -->
+          <div class="result-section" id="result-section">
+            <div class="result-header">
+              <div class="result-title">RAPORT STRATEGIC</div>
+              <div class="result-meta" id="result-meta">—</div>
+            </div>
+            <div id="result-grid"></div>
+            <div class="actions-row">
+              <button class="action-btn primary" onclick="downloadPDF()">📥 EXPORT PDF ENTERPRISE</button>
+              <button class="action-btn" onclick="copyToClipboard()">📋 COPIERE RAPORT</button>
+              <button class="action-btn" onclick="newAnalysis()">↻ ANALIZĂ NOUĂ</button>
+            </div>
+          </div>
+
+        </div><!-- /left -->
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+
+          <!-- MARKET INDICATORS -->
+          <div class="panel">
+            <div class="panel-title">Indicatori Piață Live</div>
+            <div id="market-feed">
+              <div class="feed-item"><span class="fi-name">Tech Index</span><span class="fi-change ind-up">+2.14%</span></div>
+              <div class="feed-item"><span class="fi-name">VC Activity Q4</span><span class="fi-change ind-up">$47.2B</span></div>
+              <div class="feed-item"><span class="fi-name">AI Deals YTD</span><span class="fi-change ind-nt">+312%</span></div>
+              <div class="feed-item"><span class="fi-name">SaaS Multiples</span><span class="fi-change ind-dn">-1.8x</span></div>
+              <div class="feed-item"><span class="fi-name">IPO Pipeline</span><span class="fi-change ind-up">+28</span></div>
+            </div>
+          </div>
+
+          <!-- HISTORY -->
+          <div class="panel">
+            <div class="panel-title">Arhivă Proiecte</div>
+            <div id="history-list"><div style="font-size:11px;color:var(--muted)">Nicio analiză salvată încă.</div></div>
+          </div>
+
+          <!-- QUICK INSIGHTS -->
+          <div class="panel">
+            <div class="panel-title">Insight Rapid</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.7" id="quick-insight">
+              Selectați un sector și introduceți brief-ul pentru a activa modulul de insight rapid.
+            </div>
+          </div>
+
+        </div><!-- /sidebar -->
+      </div><!-- /main-layout -->
+    </div><!-- /app-content -->
+
+  </div><!-- /wrap -->
+</div><!-- /app -->
+
+<!-- PDF RENDER TARGET -->
+<div id="pdf-render"></div>
+
+<!-- PAYWALL MODAL -->
+<div class="modal-overlay" id="paywallModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="document.getElementById('paywallModal').style.display='none'">✕</button>
+    <span class="modal-icon">💎</span>
+    <div class="modal-title">PREMIUM ACCESS</div>
+    <p class="modal-desc">Ai atins limita planului gratuit. Deblochează puterea completă a Oracle AI pentru analize nelimitate, rapoarte enterprise și acces prioritar la modele noi.</p>
+    <ul class="modal-features">
+      <li>Analize strategice nelimitate</li>
+      <li>Export PDF cu branding enterprise</li>
+      <li>Acces la date competitive live</li>
+      <li>Analiză financiară detaliată</li>
+      <li>Suport dedicat 24/7</li>
+    </ul>
+    <a href="https://buy.stripe.com/bJeeVcdhsaMsgL44Wnc3m0a" class="stripe-btn">ACTIVARE PREMIUM — 19€/lună</a>
+  </div>
 </div>
 
 <script>
-    const SB_URL = "https://oiotboqjukamwijfmheo.supabase.co"; 
-    const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v";
-    const sb = supabase.createClient(SB_URL, SB_KEY);
+/* ===================== CONFIG ===================== */
+const SB_URL = "https://oiotboqjukamwijfmheo.supabase.co";
+const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v";
+const sb = supabase.createClient(SB_URL, SB_KEY);
 
-    let isLoginMode = true;
-    let currentUser = null;
-    let sector = '';
+let isLoginMode = true;
+let currentUser = null;
+let sector = '';
+let lastResult = null;
 
-    window.onload = async () => {
-        const { data: { session } } = await sb.auth.getSession();
-        if (session) setupUI(session.user);
-    };
+/* ===================== PARTICLES ===================== */
+(function(){
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, pts = [];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  resize(); window.addEventListener('resize',resize);
+  for(let i=0;i<60;i++) pts.push({
+    x:Math.random()*2000,y:Math.random()*1200,
+    vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,
+    r:Math.random()*1.5+0.5,a:Math.random()
+  });
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(201,168,76,${p.a*0.25})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 
-    function sel(b){
-        document.querySelectorAll('.s-btn').forEach(x=>x.classList.remove('sel'));
-        b.classList.add('sel'); sector = b.dataset.v;
+/* ===================== TICKER ===================== */
+(function(){
+  const items = [
+    {label:'AI M&A 2025',val:'$127.4B',cls:'t-up'},{label:'SaaS ARR Median',val:'$24.7M',cls:'t-nt'},
+    {label:'Series B Median',val:'$42M',cls:'t-up'},{label:'VC Dry Powder',val:'$290B',cls:'t-nt'},
+    {label:'AI Startup Exits',val:'+340%',cls:'t-up'},{label:'Cloud Spend Growth',val:'+31%',cls:'t-up'},
+    {label:'Cyber Breaches YTD',val:'4,821',cls:'t-down'},{label:'IPO Window',val:'OPEN',cls:'t-up'},
+    {label:'EUR/USD',val:'1.0847',cls:'t-down'},{label:'BTC',val:'$97,420',cls:'t-up'},
+    {label:'Tech Layoffs Q1',val:'18,200',cls:'t-down'},{label:'Unicorns Created',val:'+47',cls:'t-up'}
+  ];
+  const inner = document.getElementById('ticker-inner');
+  const html = items.map(i=>`<span class="ticker-item"><span class="t-label">${i.label}</span><span class="${i.cls}">${i.val}</span></span>`).join('');
+  inner.innerHTML = html + html; // duplicate for infinite
+})();
+
+/* ===================== CHAR COUNT ===================== */
+document.getElementById('prob').addEventListener('input',function(){
+  document.getElementById('char-count').textContent = this.value.length + ' / 2000';
+  this.value = this.value.substring(0,2000);
+});
+
+/* ===================== AUTH ===================== */
+function toggleAuthMode(){
+  isLoginMode = !isLoginMode;
+  document.getElementById('auth-btn-text').textContent = isLoginMode ? 'ACCESARE PLATFORMĂ' : 'CREARE CONT ENTERPRISE';
+  document.getElementById('auth-switch').textContent = isLoginMode ? 'Nu ai cont? Creează acces enterprise' : 'Ai deja cont? Autentifică-te';
+}
+
+async function handleAuth(){
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if(!email || !password) return alert('Completați toate câmpurile.');
+  document.getElementById('auth-btn-text').textContent = 'SE PROCESEAZĂ...';
+  try {
+    let data, error;
+    if(isLoginMode){
+      ({data, error} = await sb.auth.signInWithPassword({email, password}));
+      if(error) throw error;
+      setupUI(data.user);
+    } else {
+      ({data, error} = await sb.auth.signUp({email, password}));
+      if(error) throw error;
+      const r = await sb.auth.signInWithPassword({email, password});
+      if(r.error) throw r.error;
+      setupUI(r.data.user);
+    }
+  } catch(e){
+    alert(e.message || 'Eroare autentificare.');
+    document.getElementById('auth-btn-text').textContent = isLoginMode ? 'ACCESARE PLATFORMĂ' : 'CREARE CONT ENTERPRISE';
+  }
+}
+
+window.onload = async () => {
+  const {data:{session}} = await sb.auth.getSession();
+  if(session) setupUI(session.user);
+  // simulate latency
+  document.getElementById('api-latency').textContent = (Math.random()*30+15).toFixed(0);
+};
+
+async function setupUI(user){
+  currentUser = user;
+  document.getElementById('auth-container').style.display = 'none';
+  document.getElementById('app-content').style.display = 'block';
+  document.getElementById('user-email').textContent = user.email;
+  refreshCredits();
+  loadHistory();
+}
+
+async function refreshCredits(){
+  const {data} = await sb.from('profiles').select('credits').eq('email', currentUser.email).single();
+  if(data){
+    document.getElementById('user-credits').textContent = data.credits;
+  }
+}
+
+async function loadHistory(){
+  const {data} = await sb.from('analyses').select('*').eq('user_email', currentUser.email).order('created_at',{ascending:false}).limit(15);
+  const container = document.getElementById('history-list');
+  if(data && data.length > 0){
+    const total = data.length;
+    document.getElementById('total-analyses').textContent = total;
+    container.innerHTML = data.map(item=>`
+      <div class="history-item" onclick='renderResult(${JSON.stringify(JSON.stringify(item.full_response))})'>
+        <div class="hi-date">${new Date(item.created_at).toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})}</div>
+        <div class="hi-sector">${item.sector}</div>
+        <div class="hi-preview">${(item.problem||'').substring(0,55)}...</div>
+        <span class="hi-badge">COMPLET</span>
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('total-analyses').textContent = '0';
+  }
+}
+
+function sel(btn){
+  document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  sector = btn.dataset.v;
+  updateQuickInsight(sector);
+}
+
+function updateQuickInsight(s){
+  const insights = {
+    'Logistică & Supply Chain': 'Fragmentarea rețelelor de distribuție creează oportunități de $2.3B în Europa de Est. Consolidarea prin platforme SaaS de tracking are CAGR de 34%.',
+    'FinTech & Capital Markets': 'Reglementările PSD3 deschid API banking la 187M utilizatori noi în UE. Embedded finance are piață adresabilă de $7.2B neacoperită în CEE.',
+    'Energie & CleanTech': 'Mandatele ESG 2026 forțează 68% din corporate să adopte soluții de carbon accounting. Gap de $890M în software-ul de compliance.',
+    'Cybersecurity & AI Safety': 'Atacurile bazate pe AI au crescut cu 412% în 2024. Cererea de soluții de AI-native detection depășește oferta cu 5:1 în piața europeană.',
+    'MedTech & BioTech': 'Digitalizarea dosarelor medicale în România și Bulgaria creează o fereastră de 36 luni pentru platforme de interoperabilitate SaaS.',
+    'SaaS & Enterprise Software': 'Migration de la on-premise la cloud în companiile Mid-Market europene: $4.1B oportunitate cu cycle de sales de 6-18 luni.',
+    'AI & Machine Learning': 'Cererea de inference infrastructure depășește supply-ul cu 340%. Nișe verticale AI (legal, medical, financiar) au marje de 78-85%.',
+    'Real Estate & PropTech': 'PropTech penetration în România este sub 3% vs 28% în UK. Gap masiv în property management și smart building IoT.',
+    'Retail & E-Commerce': 'Social commerce Q-commerce convergence: $1.2B piață neacoperită în Europa de Sud-Est cu potențial de exit la 8-12x ARR.',
+    'Deep Tech & Hardware': 'Semiconductor design pentru Edge AI: investiții de $340B anunțate global, cu deficit de 23,000 ingineri specializați în Europa.'
+  };
+  document.getElementById('quick-insight').textContent = insights[s] || 'Selectați un sector pentru insight rapid.';
+}
+
+/* ===================== TERMINAL LOG ===================== */
+function termLog(msg, type=''){
+  const term = document.getElementById('terminal');
+  term.style.display = 'block';
+  const line = document.createElement('div');
+  line.className = `term-line ${type}`;
+  line.innerHTML = `<span style="color:var(--muted)">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+  term.appendChild(line);
+  term.scrollTop = term.scrollHeight;
+}
+
+function clearTerminal(){
+  const t = document.getElementById('terminal');
+  t.innerHTML = '';
+  t.style.display = 'block';
+}
+
+/* ===================== RUN ===================== */
+async function run(){
+  const prob = document.getElementById('prob').value.trim();
+  if(!sector) return alert('⚠️ Selectați o verticală industrială.');
+  if(prob.length < 20) return alert('⚠️ Brief-ul trebuie să conțină cel puțin 20 de caractere.');
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  clearTerminal();
+
+  const market = document.getElementById('opt-market').value;
+  const stage = document.getElementById('opt-stage').value;
+  const depth = document.getElementById('opt-depth').value;
+
+  const logs = [
+    ['Inițializare Oracle Intelligence Engine v4.2...',''],
+    ['Conectare la baza de date vectorializată...','done'],
+    [`Sector detectat: ${sector}...`,'done'],
+    [`Piață țintă: ${market.toUpperCase()} | Stadiu: ${stage} | Adâncime: ${depth}`,'warn'],
+    ['Rulare model econometric pe date live...',''],
+    ['Scanare landscape competitiv (CB Insights + Crunchbase)...','done'],
+    ['Analiză regulatory framework & compliance gaps...','done'],
+    ['Calculare metrici financiare & exit scenarios...',''],
+    ['Generare raport strategic McKinsey-grade...','warn'],
+  ];
+
+  for(let i=0;i<logs.length;i++){
+    await delay(280 + Math.random()*200);
+    termLog(`▸ ${logs[i][0]}`, logs[i][1]);
+  }
+
+  /* === SYSTEM PROMPT — HYPER-DETAILED === */
+  const systemPrompt = `You are a Principal-level strategy consultant at McKinsey & Company with deep expertise in venture capital, M&A, and technology strategy. You have advised Fortune 500 companies, sovereign wealth funds, and Tier-1 VCs (a16z, Sequoia, General Atlantic) across 40+ countries.
+
+Your task is to produce a COMPREHENSIVE, ACTIONABLE strategic analysis report based on the client's industry sector and challenge. This is a paid enterprise deliverable — it must be meticulous, data-rich, and immediately usable by a C-suite executive or investment committee.
+
+CRITICAL FORMATTING RULES:
+- Respond ONLY with a valid JSON object. No preamble, no markdown code fences, no explanation outside the JSON.
+- All text values must be in Romanian.
+- Be highly specific — avoid generic statements. Every claim must be backed by logical reasoning, market data references, or industry frameworks.
+- Write as if you are a partner presenting to a Board of Directors.
+
+REQUIRED JSON STRUCTURE (all fields mandatory):
+
+{
+  "oportunitate": "4-5 propoziții care descriu gap-ul de piață identificat, de ce există acum, și ce forțe macroeconomice sau tehnologice îl accelerează. Menționați un trend specific (ex: AI Act, PSD3, Net Zero 2030, Fed rate cycle, etc.)",
+  
+  "valoare_min": <număr întreg în milioane USD reprezentând valoarea de exit conservatoare, bazat pe multiplii de piață reali>,
+  "valoare_max": <număr întreg în milioane USD reprezentând valoarea de exit optimistă>,
+  "arr_potential": "<ARR potențial la 5 ani, ex: $8-12M>",
+  "multiplicator": "<multiplicator realist de exit, ex: 8-12x ARR>",
+  
+  "scor_oportunitate": <număr 1-100 reprezentând atractivitatea oportunității, bazat pe TAM, competiție, timing, defensibilitate>,
+  "dificultate": "<Scăzută / Medie / Ridicată / Extrem de Ridicată>",
+  "timp_break_even": "<ex: 18-24 luni>",
+  
+  "model_monetizare": "Descriere detaliată a modelului de business: tip (SaaS/marketplace/transactional/hardware+software), pricing tiers (ex: $299/lună SMB, $2,000/lună mid-market, enterprise custom), unit economics estimate (CAC, LTV, LTV:CAC ratio target), și strategia de expansiune a veniturilor (expansion revenue, upsell, ecosystem lock-in).",
+  
+  "go_to_market": "Plan GTM în 3 faze distincte: FAZA 1 (0-6 luni): canal de achiziție primar, ICP (Ideal Customer Profile) cu titlu exact și industrie, strategie de pilot/POC și pricing de penetrare. FAZA 2 (6-18 luni): scalare prin parteneriate strategice sau channel sales, geografii prioritare, metrici de succes (ex: 50 clienți paying, $500K ARR). FAZA 3 (18-36 luni): expansiune internațională sau verticală, potențial platform play sau ecosystem development.",
+  
+  "competitori": [
+    {"nume": "<Competitor 1 real din piață>", "stadiu": "<ex: Series B, $45M raised>", "weakness": "<punctul vulnerabil exploatabil>"},
+    {"nume": "<Competitor 2>", "stadiu": "<ex: IPO, $340M ARR>", "weakness": "<gap strategic>"},
+    {"nume": "<Competitor 3>", "stadiu": "<ex: Bootstrap, nișă locală>", "weakness": "<limitare de scalare>"}
+  ],
+  
+  "avantaj_defensibil": "Ce face această soluție greu de replicat pe termen lung? (ex: network effects, proprietary data moat, regulatory certifications, switching costs, distribution exclusivity, patent landscape, etc.) Descrieți mecanismul concret.",
+  
+  "riscuri": [
+    {"risc": "<Risc 1 - ex: Regulatory>", "impact": "<High/Medium/Low>", "mitigare": "<Strategie concretă de mitigare>"},
+    {"risc": "<Risc 2 - ex: Adoption>", "impact": "<High/Medium/Low>", "mitigare": "<Strategie concretă>"},
+    {"risc": "<Risc 3 - ex: Competition>", "impact": "<Medium>", "mitigare": "<Strategie concretă>"}
+  ],
+  
+  "stack_recomandat": "<Stack tehnologic optim pentru execuție rapidă și scalabilitate: ex: 'Backend: Python/FastAPI + PostgreSQL + Redis. ML: PyTorch + Hugging Face. Infra: AWS (EKS + RDS). Frontend: React + TypeScript. Integrări: Plaid, Stripe, Salesforce CRM.'>",
+  
+  "indicatori_succes": [
+    "<KPI 1 cu target specific, ex: MRR Growth Rate >15% MoM în primele 12 luni>",
+    "<KPI 2 ex: NPS > 60 la 6 luni post-launch>",
+    "<KPI 3 ex: CAC Payback Period < 12 luni>",
+    "<KPI 4 ex: Churn < 2% MoM>"
+  ],
+  
+  "potentiali_achizitori": "<Lista de 3-4 companii strategice sau PE funds care ar fi interesate să achiziționeze această companie la exit, cu raționalul strategic pentru fiecare>",
+  
+  "verdict_executiv": "Paragraf final de 3-4 propoziții: recomandarea clară a echipei de analiză, fereastra de oportunitate (urgența acțiunii), și ce tip de fondator/echipă este ideal pentru execuție. Formulați ca un verdict de investment committee."
+}`;
+
+  const userMessage = `SECTOR: ${sector}
+PIAȚĂ GEOGRAFICĂ: ${market}
+STADIU COMPANIE: ${stage}
+ADÂNCIME ANALIZĂ: ${depth}
+
+BRIEF STRATEGIC:
+${prob}
+
+Generați un raport strategic complet și extrem de detaliat. Fiți specific, folosiți date și cifre reale din piață acolo unde este posibil, și asigurați-vă că fiecare secțiune este acționabilă.`;
+
+  try {
+    const t0 = Date.now();
+    const res = await fetch('/api/oracle', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        sector, prob, email: currentUser.email,
+        systemPrompt, userMessage,
+        market, stage, depth
+      })
+    });
+
+    const latency = Date.now() - t0;
+    document.getElementById('api-latency').textContent = latency;
+
+    if(res.status === 403){
+      document.getElementById('paywallModal').style.display = 'flex';
+      btn.disabled = false; btn.classList.remove('loading');
+      return;
     }
 
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('auth-switch').textContent = isLoginMode ? "Creează cont nou" : "Ai deja cont? Loghează-te";
-    }
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
 
-    async function handleAuth() {
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
-        try {
-            if(isLoginMode){
-                const {data, error} = await sb.auth.signInWithPassword({email, password});
-                if(error) throw error; setupUI(data.user);
-            } else {
-                const {data, error} = await sb.auth.signUp({email, password});
-                if(error) throw error; alert("Profil creat!");
-                const {data:ld} = await sb.auth.signInWithPassword({email, password}); setupUI(ld.user);
-            }
-        } catch(e) { alert(e.message); }
-    }
+    termLog('✓ Analiză completă. Generare raport...','done');
+    setTimeout(()=>{
+      renderResult(JSON.stringify(data));
+      refreshCredits();
+      setTimeout(loadHistory, 1200);
+    }, 400);
 
-    async function setupUI(user) {
-        currentUser = user;
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('app-content').style.display = 'block';
-        document.getElementById('user-email').textContent = user.email;
-        refreshCredits();
-        loadHistory();
-    }
+  } catch(e){
+    termLog(`✗ Eroare: ${e.message}`,'err');
+    alert('Eroare la procesare. Verificați consola.');
+  }
 
-    async function refreshCredits() {
-        const { data } = await sb.from('profiles').select('credits').eq('email', currentUser.email).single();
-        if(data) document.getElementById('user-credits').textContent = data.credits;
-    }
+  btn.disabled = false;
+  btn.classList.remove('loading');
+}
 
-    async function loadHistory() {
-        const { data } = await sb.from('analyses').select('*').eq('user_email', currentUser.email).order('created_at', {ascending:false});
-        if(data && data.length > 0) {
-            document.getElementById('history-list').innerHTML = data.map(item => `
-                <div class="history-item" onclick='render(${JSON.stringify(item.full_response)})'>
-                    <div class="h-date">${new Date(item.created_at).toLocaleDateString()}</div>
-                    <div class="h-title">${item.sector}</div>
-                    <div style="font-size:9px; color:#666">${item.problem.substring(0,40)}...</div>
-                </div>
-            `).join('');
-        }
-    }
+/* ===================== RENDER RESULT ===================== */
+function renderResult(jsonStr){
+  let r;
+  try { r = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr; }
+  catch(e){ alert('Răspuns invalid de la server.'); return; }
 
-    async function run() {
-        const prob = document.getElementById('prob').value.trim();
-        if(!sector || !prob) return alert("Selectează industria!");
-        
-        const btn = document.getElementById('runBtn');
-        btn.disabled = true;
-        const term = document.getElementById('terminal');
-        term.style.display = 'block';
-        term.innerHTML = `> CONECTARE ORACLE v4.0...<br>> ANALIZĂ DEEP-SCAN...`;
+  lastResult = r;
 
-        const prompt = `Ești partener McKinsey. Răspunde DOAR JSON: {
-            "gap": "descriere 40 cuvinte",
-            "valoare_min": 20, "valoare_max": 100,
-            "dificultate": "Ridicată",
-            "monetizare": "detalii model business",
-            "gtm": "plan 3 pași",
-            "riscuri": "bariere tehnice"
-        }`;
+  const score = r.scor_oportunitate || 75;
+  const scoreColor = score >= 75 ? 'var(--teal)' : score >= 50 ? 'var(--gold)' : 'var(--red)';
+  const riskClass = {'Ridicată':'risk-h','Extrem de Ridicată':'risk-h','Medie':'risk-m','Scăzută':'risk-l'}[r.dificultate] || 'risk-m';
 
-        try {
-            const res = await fetch('/api/oracle', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ sector, prob, email: currentUser.email, systemPrompt: prompt })
-            });
+  const risksHTML = Array.isArray(r.riscuri) ? r.riscuri.map(rk=>`
+    <div class="list-item">
+      <span class="list-num">!</span>
+      <div>
+        <div style="font-weight:600;margin-bottom:3px">${rk.risc} <span class="risk-badge ${rk.impact==='High'?'risk-h':rk.impact==='Medium'?'risk-m':'risk-l'}">${rk.impact}</span></div>
+        <div style="font-size:11px;color:var(--muted)">${rk.mitigare}</div>
+      </div>
+    </div>`).join('') : `<div class="r-val">${r.riscuri||'—'}</div>`;
 
-            if(res.status === 403) {
-                document.getElementById('paywallModal').style.display = 'flex';
-                btn.disabled = false; return;
-            }
+  const compHTML = Array.isArray(r.competitori) ? r.competitori.map(c=>`
+    <div class="comp-pill">
+      <div class="cp-name">${c.nume}</div>
+      <div class="cp-stage">${c.stadiu}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${c.weakness}</div>
+    </div>`).join('') : '';
 
-            const data = await res.json();
-            render(data);
-            refreshCredits();
-            setTimeout(loadHistory, 1000); // Reîncărcăm arhiva după salvare
-        } catch(e) { alert("Eroare!"); }
-        btn.disabled = false;
-    }
+  const kpiHTML = Array.isArray(r.indicatori_succes) ? r.indicatori_succes.map((k,i)=>`
+    <div class="list-item"><span class="list-num">${i+1}</span><div class="r-val">${k}</div></div>`).join('') : '';
 
-    function render(r) {
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('pdfBtn').style.display = 'flex';
-        document.getElementById('result').innerHTML = `
-            <div id="pdf-content">
-                <div style="padding:10px; border-bottom:2px solid #000; margin-bottom:20px; font-family:Syne; font-weight:800">ORACLE AI STRATEGIC REPORT</div>
-                <div class="r-grid">
-                    <div class="r-cell full"><div class="r-lbl">OPORTUNITATE</div><div class="r-val">${r.gap}</div></div>
-                    <div class="r-cell"><div class="r-lbl">EXIT VALUE</div><div class="r-big">$${r.valoare_min}-${r.valoare_max}M</div></div>
-                    <div class="r-cell"><div class="r-lbl">DIFICULTATE</div><div class="r-big" style="font-size:18px">${r.dificultate}</div></div>
-                    <div class="r-cell full"><div class="r-lbl">MODEL MONETIZARE</div><div class="r-val">${r.monetizare}</div></div>
-                    <div class="r-cell full"><div class="r-lbl">GO-TO-MARKET</div><div class="r-val">${r.gtm}</div></div>
-                </div>
-            </div>`;
-    }
+  document.getElementById('result-meta').textContent =
+    `${new Date().toLocaleDateString('ro-RO',{day:'2-digit',month:'long',year:'numeric'})} · Sector: ${sector} · Scor: ${score}/100`;
 
-    function downloadPDF() {
-        const element = document.getElementById('pdf-content');
-        
-        // Îi dăm niște setări mai "serioase"
-        const opt = {
-            margin:       [0.5, 0.5], // Margini de jumătate de inch
-            filename:     'Oracle_AI_Strategic_Report.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { 
-                scale: 2, 
-                letterRendering: true,
-                useCORS: true,
-                logging: false
-            },
-            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
+  document.getElementById('result-grid').innerHTML = `
+    <div class="r-grid">
 
-        // Rulăm procesul
-        html2pdf().set(opt).from(element).save();
-    }
+      <div class="r-card full accent fade-in stagger-1">
+        <div class="r-label">Oportunitate Identificată</div>
+        <div class="r-val">${r.oportunitate||'—'}</div>
+      </div>
 
-    async function signOut() { await sb.auth.signOut(); location.reload(); }
+      <div class="r-card fade-in stagger-1">
+        <div class="r-label">Valoare Exit Estimată</div>
+        <div class="r-big">$${r.valoare_min||'?'}–${r.valoare_max||'?'}M</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">ARR Potențial (5 ani): <strong style="color:var(--gold)">${r.arr_potential||'—'}</strong></div>
+        <div style="font-size:11px;color:var(--muted)">Multiplicator: <strong style="color:var(--gold)">${r.multiplicator||'—'}</strong></div>
+      </div>
+
+      <div class="r-card fade-in stagger-2">
+        <div class="r-label">Scor Oportunitate</div>
+        <div class="r-big" style="background:linear-gradient(135deg,${scoreColor},var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${score}/100</div>
+        <div class="r-score-bar"><div class="r-score-fill" style="width:${score}%;background:linear-gradient(90deg,${scoreColor},var(--gold))"></div></div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+          <span class="risk-badge ${riskClass}">${r.dificultate||'—'}</span>
+          <span style="font-size:11px;color:var(--muted)">Break-even: ${r.timp_break_even||'—'}</span>
+        </div>
+      </div>
+
+      <div class="r-card full fade-in stagger-2">
+        <div class="r-label">Model de Monetizare</div>
+        <div class="r-val">${r.model_monetizare||'—'}</div>
+      </div>
+
+      <div class="r-card full fade-in stagger-3">
+        <div class="r-label">Strategie Go-To-Market</div>
+        <div class="r-val">${r.go_to_market||'—'}</div>
+      </div>
+
+      <div class="r-card fade-in stagger-3">
+        <div class="r-label">Peisaj Competitiv</div>
+        <div class="competitors-grid">${compHTML||'<div class="r-val">—</div>'}</div>
+      </div>
+
+      <div class="r-card fade-in stagger-3">
+        <div class="r-label">Avantaj Defensibil</div>
+        <div class="r-val">${r.avantaj_defensibil||'—'}</div>
+      </div>
+
+      <div class="r-card fade-in stagger-3">
+        <div class="r-label">Matrice Riscuri</div>
+        ${risksHTML}
+      </div>
+
+      <div class="r-card fade-in stagger-3">
+        <div class="r-label">KPI & Indicatori Succes</div>
+        ${kpiHTML}
+      </div>
+
+      <div class="r-card fade-in stagger-3">
+        <div class="r-label">Stack Tehnologic Recomandat</div>
+        <div class="r-val">${r.stack_recomandat||'—'}</div>
+      </div>
+
+      <div class="r-card fade-in stagger-3">
+        <div class="r-label">Potențiali Achizitori / Exit Targets</div>
+        <div class="r-val">${r.potentiali_achizitori||'—'}</div>
+      </div>
+
+      <div class="r-card full dark fade-in stagger-3" style="border-color:rgba(201,168,76,0.3)">
+        <div class="r-label" style="color:var(--gold)">Verdict Executiv</div>
+        <div class="r-val" style="font-size:14px;font-style:italic;color:var(--text)">"${r.verdict_executiv||'—'}"</div>
+      </div>
+
+    </div>`;
+
+  document.getElementById('result-section').style.display = 'block';
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ===================== PDF ===================== */
+function downloadPDF(){
+  if(!lastResult) return;
+  const r = lastResult;
+  const el = document.getElementById('pdf-render');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="font-family:Arial,sans-serif;color:#111;padding:60px 50px;background:white;max-width:900px">
+      <div style="border-bottom:3px solid #c9a84c;padding-bottom:20px;margin-bottom:30px;display:flex;justify-content:space-between;align-items:flex-end">
+        <div>
+          <div style="font-size:32px;font-weight:900;letter-spacing:0.08em;color:#111">ORACLE.AI</div>
+          <div style="font-size:11px;color:#888;letter-spacing:0.2em;text-transform:uppercase">Enterprise Strategic Intelligence Report</div>
+        </div>
+        <div style="text-align:right;font-size:11px;color:#888">
+          <div>${new Date().toLocaleDateString('ro-RO',{day:'2-digit',month:'long',year:'numeric'})}</div>
+          <div>CONFIDENȚIAL · ${sector}</div>
+        </div>
+      </div>
+      ${buildPDFSection('OPORTUNITATE IDENTIFICATĂ', r.oportunitate)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        ${buildPDFBox('Valoare Exit', `$${r.valoare_min}–${r.valoare_max}M`)}
+        ${buildPDFBox('Scor Oportunitate', `${r.scor_oportunitate}/100`)}
+        ${buildPDFBox('ARR Potențial 5 ani', r.arr_potential||'—')}
+        ${buildPDFBox('Time-to-Break-Even', r.timp_break_even||'—')}
+      </div>
+      ${buildPDFSection('MODEL DE MONETIZARE', r.model_monetizare)}
+      ${buildPDFSection('GO-TO-MARKET STRATEGY', r.go_to_market)}
+      ${buildPDFSection('AVANTAJ DEFENSIBIL', r.avantaj_defensibil)}
+      ${buildPDFSection('STACK TEHNOLOGIC', r.stack_recomandat)}
+      ${buildPDFSection('POTENȚIALI ACHIZITORI', r.potentiali_achizitori)}
+      ${buildPDFSection('VERDICT EXECUTIV', r.verdict_executiv)}
+      <div style="margin-top:60px;padding-top:20px;border-top:1px solid #eee;font-size:10px;color:#aaa;display:flex;justify-content:space-between">
+        <span>© ${new Date().getFullYear()} Oracle AI Enterprise · Raport confidențial</span>
+        <span>Generat automat de Oracle Intelligence Engine v4.2</span>
+      </div>
+    </div>`;
+
+  html2pdf().set({
+    margin:[0.5,0.5],
+    filename:`Oracle_AI_Strategic_Report_${Date.now()}.pdf`,
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,logging:false},
+    jsPDF:{unit:'in',format:'letter',orientation:'portrait'}
+  }).from(el).save().then(()=>{ el.style.display='none'; });
+}
+
+function buildPDFSection(title, content){
+  return `<div style="margin-bottom:24px"><div style="font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#c9a84c;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0e8d5">${title}</div><div style="font-size:13px;line-height:1.75;color:#333">${content||'—'}</div></div>`;
+}
+
+function buildPDFBox(label, val){
+  return `<div style="border:1px solid #eee;border-radius:8px;padding:16px"><div style="font-size:9px;color:#888;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px">${label}</div><div style="font-size:22px;font-weight:700;color:#c9a84c">${val}</div></div>`;
+}
+
+/* ===================== UTILS ===================== */
+function copyToClipboard(){
+  if(!lastResult) return;
+  navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+  alert('Raport copiat în clipboard.');
+}
+
+function newAnalysis(){
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('terminal').style.display = 'none';
+  document.getElementById('prob').value = '';
+  document.getElementById('char-count').textContent = '0 / 2000';
+  document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('sel'));
+  sector = '';
+  lastResult = null;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function signOut(){ await sb.auth.signOut(); location.reload(); }
 </script>
 </body>
 </html>
