@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oracle AI - Innovation Analyzer</title>
+    <title>Oracle AI - Strategic Deep Analysis</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -14,57 +14,56 @@
         }
         body { background: var(--paper); color: var(--ink); font-family: var(--mono); }
         .w{max-width: 1000px; margin: 0 auto; min-height:100vh; padding:2rem; position:relative}
-        .w::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+        .w::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
         
-        /* AUTH UI */
         #auth-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-        .auth-card { background: white; padding: 2.5rem; border-radius: 12px; border: 1px solid var(--line); width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
-        .auth-logo { font-family: var(--display); font-size: 32px; font-weight: 800; margin-bottom: 2rem; }
+        .auth-card { background: white; padding: 3rem; border-radius: 12px; border: 1px solid var(--line); width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
+        .auth-logo { font-family: var(--display); font-size: 36px; font-weight: 800; margin-bottom: 2rem; }
         .auth-logo span { color: var(--accent); }
-        .auth-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); outline: none; transition: 0.2s; }
-        .auth-input:focus { border-color: var(--accent); }
-        .auth-btn { width: 100%; padding: 15px; background: var(--ink); color: white; border: none; border-radius: 6px; font-family: var(--display); font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .auth-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); outline: none; transition: 0.2s; background: #fafafa; }
+        .auth-input:focus { border-color: var(--accent); background: white; }
+        .auth-btn { width: 100%; padding: 16px; background: var(--ink); color: white; border: none; border-radius: 6px; font-family: var(--display); font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
         .auth-btn:hover { background: var(--accent); transform: translateY(-2px); }
         .switch-btn { margin-top: 20px; font-size: 12px; color: #666; cursor: pointer; text-decoration: underline; }
 
-        /* APP CONTENT (Ascuns initial) */
         #app-content { display: none; }
-
         .header{display:flex;align-items:baseline;gap:16px;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--line)}
         .logo{font-family:var(--display);font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-1px}
         .logo span{color:var(--accent)}
-        .user-info { margin-left: auto; font-size: 11px; text-align: right; }
-        .logout-link { color: var(--accent); cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
+        .user-info { margin-left: auto; font-size: 11px; text-align: right; line-height: 1.4; }
+        .logout-link { color: var(--accent); cursor: pointer; text-decoration: underline; font-weight: 600; }
 
-        .sectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:1.5rem}
-        .s-btn{background:white;border:1px solid var(--line);border-radius:6px;padding:15px 10px;cursor:pointer;text-align:center;transition:all .15s}
-        .s-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .sectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:2rem}
+        .s-btn{background:white;border:1px solid var(--line);border-radius:8px;padding:20px 10px;cursor:pointer;text-align:center;transition:all .2s}
+        .s-btn:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow: 0 5px 15px rgba(0,0,0,0.05);}
         .s-btn.sel{background:var(--ink);color:white;border-color:var(--ink)}
-        .s-ico{font-size:20px;display:block;margin-bottom:6px}
-        .s-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+        .s-ico{font-size:24px;display:block;margin-bottom:8px}
+        .s-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 
-        .input-area{margin-bottom:1.5rem}
-        .input-label{font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-        textarea{width:100%;background:white;border:1px solid var(--line);border-radius:6px;padding:15px;font-family:var(--mono);font-size:13px;height:100px;outline:none;resize:none}
+        textarea{width:100%;background:white;border:1px solid var(--line);border-radius:8px;padding:20px;font-family:var(--mono);font-size:14px;height:120px;outline:none;resize:none;margin-bottom:1.5rem}
+        textarea:focus{border-color:var(--accent)}
 
-        .run-btn{width:100%;background:var(--ink);color:white;padding:18px;border:none;border-radius:6px;font-family:var(--display);font-size:15px;font-weight:800;cursor:pointer;transition:0.2s}
-        .run-btn:hover{background:var(--accent);letter-spacing:1px}
+        .run-btn{width:100%;background:var(--ink);color:white;padding:20px;border:none;border-radius:8px;font-family:var(--display);font-size:16px;font-weight:800;cursor:pointer;transition:0.3s;letter-spacing:1px}
+        .run-btn:hover{background:var(--accent);transform: scale(1.01)}
         .run-btn:disabled{opacity:0.5;cursor:not-allowed}
 
-        .terminal{background:#0d1117;color:#58a6ff;padding:1.5rem;border-radius:8px;margin-top:1.5rem;font-size:12px;display:none;max-height:200px;overflow-y:auto;line-height:1.6}
+        .terminal{background:#0a0c10;color:#00ff41;padding:1.5rem;border-radius:8px;margin-top:1.5rem;font-size:12px;display:none;font-family:var(--mono);border-left: 4px solid var(--accent)}
         
-        .result{margin-top:2rem;display:none}
-        .r-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-        .r-cell{background:white;padding:1.5rem}
+        .result{margin-top:2.5rem;display:none;animation: fadeIn 0.5s ease-out;}
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        
+        .r-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow: 0 10px 30px rgba(0,0,0,0.05)}
+        .r-cell{background:white;padding:2rem}
         .r-cell.full{grid-column:1/-1}
-        .r-lbl{font-size:10px;color:var(--accent);font-weight:700;margin-bottom:8px;text-transform:uppercase}
-        .r-val{font-size:13px;line-height:1.7}
-        .r-big{font-family:var(--display);font-size:28px;font-weight:800}
+        .r-cell.dark{background:#fafafa}
+        .r-lbl{font-size:11px;color:var(--accent);font-weight:800;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
+        .r-val{font-size:14px;line-height:1.7;color:#333}
+        .r-big{font-family:var(--display);font-size:32px;font-weight:800;color:var(--ink)}
 
-        /* MODAL PAYWALL */
-        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;justify-content:center;align-items:center;backdrop-filter:blur(5px)}
-        .modal{background:var(--paper);padding:3rem;border-radius:12px;max-width:450px;text-align:center;border:2px solid var(--accent)}
-        .stripe-btn{display:block;background:#635bff;color:white;padding:16px;border-radius:6px;text-decoration:none;font-weight:700;margin-top:2rem}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;justify-content:center;align-items:center;backdrop-filter:blur(8px)}
+        .modal{background:var(--paper);padding:3rem;border-radius:16px;max-width:450px;text-align:center;border:1px solid var(--accent);box-shadow: 0 0 50px rgba(200,86,42,0.2)}
+        .stripe-btn{display:block;background:#635bff;color:white;padding:18px;border-radius:8px;text-decoration:none;font-weight:800;margin-top:2rem;transition:0.2s}
+        .stripe-btn:hover{background:#4b45e5;transform:translateY(-2px)}
     </style>
 </head>
 <body>
@@ -73,11 +72,11 @@
     <div id="auth-container">
         <div class="auth-card">
             <div class="auth-logo">ORACLE<span>.</span>AI</div>
-            <h2 id="auth-title" style="margin-bottom:20px; font-size:18px;">Intră în sistem</h2>
-            <input type="email" id="auth-email" class="auth-input" placeholder="Adresa de email">
-            <input type="password" id="auth-password" class="auth-input" placeholder="Parola secretă">
+            <h2 id="auth-title" style="margin-bottom:20px; font-size:18px;">Protocol de Acces</h2>
+            <input type="email" id="auth-email" class="auth-input" placeholder="Email corporat">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Cod secret">
             <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">AUTENTIFICARE</button>
-            <div class="switch-btn" id="auth-switch" onclick="toggleAuthMode()">Nu ai cont? Înregistrează-te aici</div>
+            <div class="switch-btn" id="auth-switch" onclick="toggleAuthMode()">Nu aveți cont? Solicitați acces aici</div>
         </div>
     </div>
 
@@ -85,26 +84,23 @@
         <div class="header">
             <div class="logo">ORACLE<span>.</span>AI</div>
             <div class="user-info">
-                Logat: <b id="user-email">...</b><br>
-                Credite: <b id="user-credits">0</b>
-                <span class="logout-link" onclick="signOut()">Ieșire sistem</span>
+                ID: <b id="user-email">...</b><br>
+                ANALIZA DISPONIBILE: <b id="user-credits" style="color:var(--accent)">0</b><br>
+                <span class="logout-link" onclick="signOut()">Sistem Ieșire</span>
             </div>
         </div>
 
         <div class="sectors">
-            <button class="s-btn" data-v="Logistică și Supply Chain" onclick="sel(this)"><span class="s-ico">🚚</span><span class="s-lbl">Logistică</span></button>
-            <button class="s-btn" data-v="FinTech și Plăți Digitale" onclick="sel(this)"><span class="s-ico">🏦</span><span class="s-lbl">FinTech</span></button>
-            <button class="s-btn" data-v="Energie și Sustenabilitate" onclick="sel(this)"><span class="s-ico">⚡</span><span class="s-lbl">Energie</span></button>
-            <button class="s-btn" data-v="Cybersecurity" onclick="sel(this)"><span class="s-ico">🔐</span><span class="s-lbl">Cybersec</span></button>
-            <button class="s-btn" data-v="MedTech și Sănătate" onclick="sel(this)"><span class="s-ico">🏥</span><span class="s-lbl">MedTech</span></button>
+            <button class="s-btn" data-v="Logistică & Supply Chain" onclick="sel(this)"><span class="s-ico">🚚</span><span class="s-lbl">Logistică</span></button>
+            <button class="s-btn" data-v="FinTech & Plăți Digitale" onclick="sel(this)"><span class="s-ico">🏦</span><span class="s-lbl">FinTech</span></button>
+            <button class="s-btn" data-v="Energie & Sustenabilitate" onclick="sel(this)"><span class="s-ico">⚡</span><span class="s-lbl">Energie</span></button>
+            <button class="s-btn" data-v="Cybersecurity Enterprise" onclick="sel(this)"><span class="s-ico">🔐</span><span class="s-lbl">Cybersec</span></button>
+            <button class="s-btn" data-v="MedTech & Diagnostic AI" onclick="sel(this)"><span class="s-ico">🏥</span><span class="s-lbl">MedTech</span></button>
         </div>
 
-        <div class="input-area">
-            <div class="input-label">> DESCRIEȚI PROVOCAREA TEHNICĂ</div>
-            <textarea id="prob" placeholder="Ex: Optimizarea rutelor de livrare pentru reducerea amprentei de carbon cu 20%..."></textarea>
-        </div>
+        <textarea id="prob" placeholder="Descrieți provocarea strategică sau ineficiența tehnică detectată..."></textarea>
 
-        <button class="run-btn" id="runBtn" onclick="run()">▶ ACTIVEAZĂ ANALIZA ORACLE</button>
+        <button class="run-btn" id="runBtn" onclick="run()">▶ LANSARE ANALIZĂ STRATEGICĂ</button>
 
         <div class="terminal" id="terminal"></div>
         <div id="result" class="result"></div>
@@ -113,17 +109,17 @@
 
 <div class="modal-overlay" id="paywallModal">
     <div class="modal">
-        <div style="font-size:50px">🔮</div>
-        <h2 style="font-family:var(--display); margin:15px 0">Limită Atinsă</h2>
-        <p style="font-size:14px; color:#555">Ai folosit cele 2 analize gratuite. Treci la Oracle AI Premium pentru acces nelimitat.</p>
-        <a href="https://buy.stripe.com/bJeeVcdhsaMsgL44Wnc3m0a" class="stripe-btn">Deblochează Premium - 19€/lună</a>
+        <div style="font-size:60px">💎</div>
+        <h2 style="font-family:var(--display); margin:20px 0">CAPACITATE ATINSĂ</h2>
+        <p style="font-size:15px; color:#555; line-height:1.6">Analizele gratuite au fost epuizate. Pentru a continua explorarea oportunităților de piață, activați licența Enterprise.</p>
+        <a href="https://buy.stripe.com/your-link" class="stripe-btn">DEBLOCARE ACCES PREMIUM - 19€</a>
     </div>
 </div>
 
 <script>
-    // 1. DATELE TALE SUPABASE (Pune-le pe cele corecte!)
+    // --- CONFIGURARE (DATELE TALE AICI) ---
     const SB_URL = "https://oiotboqjukamwijfmheo.supabase.co"; 
-    const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v"; // Pune cheia ta lunga aici
+    const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v";
     const sb = supabase.createClient(SB_URL, SB_KEY);
 
     let isLoginMode = true;
@@ -142,25 +138,25 @@
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').textContent = isLoginMode ? "Intră în sistem" : "Creează cont nou";
+        document.getElementById('auth-title').textContent = isLoginMode ? "Protocol de Acces" : "Creare Profil Nou";
         document.getElementById('auth-submit-btn').textContent = isLoginMode ? "AUTENTIFICARE" : "ÎNREGISTRARE";
-        document.getElementById('auth-switch').textContent = isLoginMode ? "Nu ai cont? Înregistrează-te aici" : "Ai deja cont? Loghează-te";
+        document.getElementById('auth-switch').textContent = isLoginMode ? "Nu aveți cont? Solicitați acces" : "Aveți deja cont? Logare sistem";
     }
 
     async function handleAuth() {
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
-        if(!email || !password) return alert("Introdu datele!");
+        if(!email || !password) return alert("Completați datele de acces!");
         try {
             if(isLoginMode){
                 const {data, error} = await sb.auth.signInWithPassword({email, password});
                 if(error) throw error; setupUI(data.user);
             } else {
                 const {data, error} = await sb.auth.signUp({email, password});
-                if(error) throw error; alert("Cont creat! Te logăm...");
+                if(error) throw error; alert("Profil creat! Autentificare în curs...");
                 const {data:ld} = await sb.auth.signInWithPassword({email, password}); setupUI(ld.user);
             }
-        } catch(e) { alert(e.message); }
+        } catch(e) { alert("EROARE SISTEM: " + e.message); }
     }
 
     function setupUI(user) {
@@ -178,37 +174,31 @@
 
     async function signOut() { await sb.auth.signOut(); location.reload(); }
 
-   async function run() {
+    async function run() {
         const prob = document.getElementById('prob').value.trim();
-        if(!sector || !prob) return alert("Selectează industria și scrie problema!");
+        if(!sector || !prob) return alert("Selectați sectorul industrial!");
         
         const btn = document.getElementById('runBtn');
         btn.disabled = true;
         const term = document.getElementById('terminal');
         term.style.display = 'block';
-        term.innerHTML = `> Inițializare Oracle v2.0...<br>> Verificare credite pentru ${currentUser.email}...`;
+        term.innerHTML = `> CONECTARE SERVER ORACLE v3.0...<br>> ANALIZĂ CONTEXTUALĂ ÎN CURS...<br>> GENERARE MODEL FINANCIAR...`;
 
-        // INSTRUCTIUNI ULTRA-STRICTE PENTRU AI
-        const promptStrict = `Ești un partener senior la McKinsey & Company. Analizează problema și oferă o soluție de miliarde de dolari. Răspunde EXCLUSIV JSON cu aceste chei:
-"gap": "Descriere detaliată a eșecului actual al pieței (minim 30 cuvinte).",
-"solutie_tehnica": "Arhitectura software propusă: ce AI folosim, ce senzori, ce baze de date (detaliat).",
-"valoare_min": 15,
-"valoare_max": 80,
-"dificultate": "Ridicată/Critică",
-"monetizare": "Model de business detaliat: preț per utilizator, licențiere, parteneriate strategice.",
-"go_to_market": "Cum obținem primii 10 clienți enterprise în 6 luni.",
-"riscuri": "Principalele 2 bariere (tehnice sau legale) și cum le depășim."`;
+        const promptV3 = `Ești un partener senior la McKinsey & Company. Analizează problema și oferă o soluție de miliarde de dolari. Răspunde EXCLUSIV JSON cu aceste chei:
+        "gap": "Descriere detaliată a oportunității (minim 40 cuvinte).",
+        "solutie_tehnica": "Arhitectura propusă: AI, baze de date, senzori, integrare.",
+        "valoare_min": 20,
+        "valoare_max": 100,
+        "dificultate": "Critică / Ridicată",
+        "monetizare": "Model de business detaliat (SaaS, Licențiere, Procent din economii).",
+        "gtm": "Plan de lansare în 3 pași pentru primii clienți Enterprise.",
+        "riscuri": "Principalele bariere tehnice sau legale și soluții."`;
 
         try {
             const res = await fetch('/api/oracle', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    sector, 
-                    prob, 
-                    email: currentUser.email, 
-                    systemPrompt: promptStrict // Trimitem noul prompt strict
-                })
+                body: JSON.stringify({ sector, prob, email: currentUser.email, systemPrompt: promptV3 })
             });
 
             if(res.status === 403) {
@@ -217,35 +207,30 @@
             }
 
             const data = await res.json();
-            console.log("Date primite de la AI:", data); // Vedem in consola ce a raspuns
-
-            term.innerHTML += `<br>> Analiză completă. Randare rezultate...`;
+            term.innerHTML += `<br>> ANALIZĂ FINALIZATĂ. RANDARE MATRIX...`;
             render(data);
             refreshCredits();
-        } catch(e) { 
-            console.error(e);
-            alert("Eroare server! Verificați consola (F12)."); 
-        }
+        } catch(e) { alert("ERROARE COMUNICAȚIE SERVER!"); }
         btn.disabled = false;
     }
 
     function render(r) {
-    document.getElementById('result').style.display = 'block';
-    document.getElementById('result').innerHTML = `
-        <div class="r-grid">
-            <div class="r-cell full"><div class="r-lbl">OPORTUNITATE PIAȚĂ</div><div class="r-val">${r.gap}</div></div>
-            
-            <div class="r-cell"><div class="r-lbl">VALOARE EXIT (5 ANI)</div><div class="r-big">$${r.valoare_min}-${r.valoare_max}M</div></div>
-            <div class="r-cell"><div class="r-lbl">COMPLEXITATE</div><div class="r-big" style="font-size:18px">${r.dificultate}</div></div>
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result').innerHTML = `
+            <div class="r-grid">
+                <div class="r-cell full dark"><div class="r-lbl">OPORTUNITATE STRATEGICĂ</div><div class="r-val">${r.gap}</div></div>
+                
+                <div class="r-cell"><div class="r-lbl">EXIT VALUE (5 ANI)</div><div class="r-big">$${r.valoare_min}-${r.valoare_max}M</div></div>
+                <div class="r-cell"><div class="r-lbl">COMPLEXITATE EXECUȚIE</div><div class="r-big" style="font-size:20px">${r.dificultate}</div></div>
 
-            <div class="r-cell full"><div class="r-lbl">ARHITECTURĂ TEHNICĂ PROPUSĂ</div><div class="r-val" style="color:#2a5c4d; font-weight:600;">${r.solutie_tehnica}</div></div>
-            
-            <div class="r-cell"><div class="r-lbl">STRATEGIE DE MONETIZARE</div><div class="r-val">${r.monetizare}</div></div>
-            <div class="r-cell"><div class="r-lbl">GO-TO-MARKET (0-6 LUNI)</div><div class="r-val">${r.go_to_market}</div></div>
-            
-            <div class="r-cell full"><div class="r-lbl">BARIERE ȘI MITIGARE RISCURI</div><div class="r-val" style="border-left: 2px solid var(--accent); padding-left:10px;">${r.riscuri}</div></div>
-        </div>`;
-}
+                <div class="r-cell full"><div class="r-lbl">ARHITECTURĂ TEHNICĂ RECOMANDATĂ</div><div class="r-val" style="color:var(--accent2); font-weight:600">${r.solutie_tehnica}</div></div>
+                
+                <div class="r-cell"><div class="r-lbl">MODEL DE MONETIZARE</div><div class="r-val">${r.monetizare}</div></div>
+                <div class="r-cell"><div class="r-lbl">GO-TO-MARKET (0-6 LUNI)</div><div class="r-val">${r.gtm}</div></div>
+                
+                <div class="r-cell full dark"><div class="r-lbl">ANALIZĂ RISCURI & MITIGARE</div><div class="r-val" style="border-left: 3px solid var(--accent); padding-left:15px">${r.riscuri}</div></div>
+            </div>`;
+    }
 </script>
 </body>
 </html>
