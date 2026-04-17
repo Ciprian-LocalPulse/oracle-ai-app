@@ -3,38 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oracle AI - Premium Access</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <title>Oracle AI - Innovation Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* CSS-ul anterior rămâne la fel, adăugăm doar stilul pentru Auth */
-        :root{ --ink:#0a0a0a; --paper:#f5f3ee; --accent:#c8562a; --line:rgba(0,0,0,0.1); --mono:'JetBrains Mono'; --display:'Syne'; }
-        body { background: var(--paper); color: var(--ink); font-family: var(--mono); margin:0; }
-        .w { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        *{box-sizing:border-box;margin:0;padding:0}
+        :root{
+            --ink:#0a0a0a;--paper:#f5f3ee;--accent:#c8562a;--accent2:#1a3a5c;
+            --line:rgba(0,0,0,0.1);--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;
+        }
+        body { background: var(--paper); color: var(--ink); font-family: var(--mono); }
+        .w{max-width: 1000px; margin: 0 auto; min-height:100vh; padding:2rem; position:relative}
+        .w::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
         
         /* AUTH UI */
         #auth-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-        .auth-card { background: white; padding: 2.5rem; border-radius: 8px; border: 1px solid var(--line); width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .auth-title { font-family: var(--display); font-size: 24px; margin-bottom: 1.5rem; text-align: center; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 4px; outline: none; }
-        .auth-btn { width: 100%; padding: 12px; background: var(--ink); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 10px; }
-        .auth-btn:hover { background: var(--accent); }
-        .switch-auth { font-size: 12px; text-align: center; margin-top: 15px; cursor: pointer; color: #666; }
-        
-        /* APP UI (Ascunse inițial) */
+        .auth-card { background: white; padding: 2.5rem; border-radius: 12px; border: 1px solid var(--line); width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
+        .auth-logo { font-family: var(--display); font-size: 32px; font-weight: 800; margin-bottom: 2rem; }
+        .auth-logo span { color: var(--accent); }
+        .auth-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); outline: none; transition: 0.2s; }
+        .auth-input:focus { border-color: var(--accent); }
+        .auth-btn { width: 100%; padding: 15px; background: var(--ink); color: white; border: none; border-radius: 6px; font-family: var(--display); font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .auth-btn:hover { background: var(--accent); transform: translateY(-2px); }
+        .switch-btn { margin-top: 20px; font-size: 12px; color: #666; cursor: pointer; text-decoration: underline; }
+
+        /* APP CONTENT (Ascuns initial) */
         #app-content { display: none; }
-        .user-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; font-size: 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+
+        .header{display:flex;align-items:baseline;gap:16px;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--line)}
+        .logo{font-family:var(--display);font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-1px}
+        .logo span{color:var(--accent)}
+        .user-info { margin-left: auto; font-size: 11px; text-align: right; }
+        .logout-link { color: var(--accent); cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
+
+        .sectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:1.5rem}
+        .s-btn{background:white;border:1px solid var(--line);border-radius:6px;padding:15px 10px;cursor:pointer;text-align:center;transition:all .15s}
+        .s-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .s-btn.sel{background:var(--ink);color:white;border-color:var(--ink)}
+        .s-ico{font-size:20px;display:block;margin-bottom:6px}
+        .s-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+
+        .input-area{margin-bottom:1.5rem}
+        .input-label{font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+        textarea{width:100%;background:white;border:1px solid var(--line);border-radius:6px;padding:15px;font-family:var(--mono);font-size:13px;height:100px;outline:none;resize:none}
+
+        .run-btn{width:100%;background:var(--ink);color:white;padding:18px;border:none;border-radius:6px;font-family:var(--display);font-size:15px;font-weight:800;cursor:pointer;transition:0.2s}
+        .run-btn:hover{background:var(--accent);letter-spacing:1px}
+        .run-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+        .terminal{background:#0d1117;color:#58a6ff;padding:1.5rem;border-radius:8px;margin-top:1.5rem;font-size:12px;display:none;max-height:200px;overflow-y:auto;line-height:1.6}
         
-        /* Restul stilurilor din versiunea anterioară pentru rezultate și terminal... */
-        .run-btn { width: 100%; background: var(--ink); color: white; padding: 15px; border: none; border-radius: 4px; font-family: var(--display); cursor: pointer; font-weight: 800; }
-        .terminal { background: #0d1117; color: #58a6ff; padding: 15px; border-radius: 5px; margin-top: 15px; font-size: 12px; display: none; }
-        .result { margin-top: 20px; display: none; }
-        .r-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .r-cell { background: white; padding: 15px; border: 1px solid var(--line); }
-        .full { grid-column: 1 / -1; }
-        .r-lbl { font-size: 10px; color: var(--accent); font-weight: bold; }
-        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; justify-content:center; align-items:center; }
-        .modal { background:white; padding:30px; border-radius:8px; text-align:center; max-width:400px; }
+        .result{margin-top:2rem;display:none}
+        .r-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+        .r-cell{background:white;padding:1.5rem}
+        .r-cell.full{grid-column:1/-1}
+        .r-lbl{font-size:10px;color:var(--accent);font-weight:700;margin-bottom:8px;text-transform:uppercase}
+        .r-val{font-size:13px;line-height:1.7}
+        .r-big{font-family:var(--display);font-size:28px;font-weight:800}
+
+        /* MODAL PAYWALL */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;justify-content:center;align-items:center;backdrop-filter:blur(5px)}
+        .modal{background:var(--paper);padding:3rem;border-radius:12px;max-width:450px;text-align:center;border:2px solid var(--accent)}
+        .stripe-btn{display:block;background:#635bff;color:white;padding:16px;border-radius:6px;text-decoration:none;font-weight:700;margin-top:2rem}
     </style>
 </head>
 <body>
@@ -42,36 +72,40 @@
 <div class="w">
     <div id="auth-container">
         <div class="auth-card">
-            <div class="auth-title" id="auth-title">Intră în Oracle AI</div>
-            <input type="email" id="auth-email" placeholder="Email-ul tău">
-            <input type="password" id="auth-password" placeholder="Parolă">
-            <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">Autentificare</button>
-            <div class="switch-auth" onclick="toggleAuthMode()" id="auth-switch">Nu ai cont? Înregistrează-te</div>
+            <div class="auth-logo">ORACLE<span>.</span>AI</div>
+            <h2 id="auth-title" style="margin-bottom:20px; font-size:18px;">Intră în sistem</h2>
+            <input type="email" id="auth-email" class="auth-input" placeholder="Adresa de email">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Parola secretă">
+            <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">AUTENTIFICARE</button>
+            <div class="switch-btn" id="auth-switch" onclick="toggleAuthMode()">Nu ai cont? Înregistrează-te aici</div>
         </div>
     </div>
 
     <div id="app-content">
-        <div class="user-bar">
-            <div>Logat ca: <b id="user-email">...</b> | Credite: <b id="user-credits">0</b></div>
-            <button onclick="signOut()" style="background:none; border:none; cursor:pointer; color:var(--accent); text-decoration:underline; font-size:11px;">Ieșire</button>
-        </div>
-
         <div class="header">
-            <h1 style="font-family:var(--display)">ORACLE.AI</h1>
+            <div class="logo">ORACLE<span>.</span>AI</div>
+            <div class="user-info">
+                Logat: <b id="user-email">...</b><br>
+                Credite: <b id="user-credits">0</b>
+                <span class="logout-link" onclick="signOut()">Ieșire sistem</span>
+            </div>
         </div>
 
-        <div style="margin-bottom:20px;">
-            <select id="sector-select" style="width:100%; padding:10px; margin-bottom:10px;">
-                <option value="">Alege Industrie...</option>
-                <option value="Logistică">Logistică</option>
-                <option value="FinTech">FinTech</option>
-                <option value="Cybersec">Cybersec</option>
-            </select>
-            <textarea id="prob" style="width:100%; height:80px; padding:10px;" placeholder="Descrie problema..."></textarea>
+        <div class="sectors">
+            <button class="s-btn" data-v="Logistică și Supply Chain" onclick="sel(this)"><span class="s-ico">🚚</span><span class="s-lbl">Logistică</span></button>
+            <button class="s-btn" data-v="FinTech și Plăți Digitale" onclick="sel(this)"><span class="s-ico">🏦</span><span class="s-lbl">FinTech</span></button>
+            <button class="s-btn" data-v="Energie și Sustenabilitate" onclick="sel(this)"><span class="s-ico">⚡</span><span class="s-lbl">Energie</span></button>
+            <button class="s-btn" data-v="Cybersecurity" onclick="sel(this)"><span class="s-ico">🔐</span><span class="s-lbl">Cybersec</span></button>
+            <button class="s-btn" data-v="MedTech și Sănătate" onclick="sel(this)"><span class="s-ico">🏥</span><span class="s-lbl">MedTech</span></button>
         </div>
 
-        <button class="run-btn" id="runBtn" onclick="run()">▶ ACTIVEAZĂ ANALIZA</button>
-        
+        <div class="input-area">
+            <div class="input-label">> DESCRIEȚI PROVOCAREA TEHNICĂ</div>
+            <textarea id="prob" placeholder="Ex: Optimizarea rutelor de livrare pentru reducerea amprentei de carbon cu 20%..."></textarea>
+        </div>
+
+        <button class="run-btn" id="runBtn" onclick="run()">▶ ACTIVEAZĂ ANALIZA ORACLE</button>
+
         <div class="terminal" id="terminal"></div>
         <div id="result" class="result"></div>
     </div>
@@ -79,61 +113,57 @@
 
 <div class="modal-overlay" id="paywallModal">
     <div class="modal">
-        <h2>🔮 Limita Atinsă</h2>
-        <p>Ai consumat analizele gratuite. Treci la Premium pentru acces nelimitat.</p>
-        <a href="https://buy.stripe.com/bJeeVcdhsaMsgL44Wnc3m0a" style="display:block; background:#635bff; color:white; padding:15px; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">Deblochează Premium - 19€</a>
+        <div style="font-size:50px">🔮</div>
+        <h2 style="font-family:var(--display); margin:15px 0">Limită Atinsă</h2>
+        <p style="font-size:14px; color:#555">Ai folosit cele 2 analize gratuite. Treci la Oracle AI Premium pentru acces nelimitat.</p>
+        <a href="https://buy.stripe.com/bJeeVcdhsaMsgL44Wnc3m0a" class="stripe-btn">Deblochează Premium - 19€/lună</a>
     </div>
 </div>
 
 <script>
+    // 1. DATELE TALE SUPABASE (Pune-le pe cele corecte!)
     const SB_URL = "https://oiotboqjukamwijfmheo.supabase.co"; 
-    const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v"; 
-
-    // Initializam clientul cu numele 'sb'
+    const SB_KEY = "sb_publishable_fFEdw-2lQ_VbuIIbCAG2Hw_brZSIe-v"; // Pune cheia ta lunga aici
     const sb = supabase.createClient(SB_URL, SB_KEY);
 
     let isLoginMode = true;
     let currentUser = null;
+    let sector = '';
 
-    // Verificam daca userul este deja logat
     window.onload = async () => {
         const { data: { session } } = await sb.auth.getSession();
-        if (session) { setupUI(session.user); }
+        if (session) setupUI(session.user);
     };
+
+    function sel(b){
+        document.querySelectorAll('.s-btn').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel'); sector = b.dataset.v;
+    }
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').textContent = isLoginMode ? "Intră în Oracle AI" : "Creează Cont Nou";
-        document.getElementById('auth-submit-btn').textContent = isLoginMode ? "Autentificare" : "Înregistrare";
-        document.getElementById('auth-switch').textContent = isLoginMode ? "Nu ai cont? Înregistrează-te" : "Ai deja cont? Loghează-te";
+        document.getElementById('auth-title').textContent = isLoginMode ? "Intră în sistem" : "Creează cont nou";
+        document.getElementById('auth-submit-btn').textContent = isLoginMode ? "AUTENTIFICARE" : "ÎNREGISTRARE";
+        document.getElementById('auth-switch').textContent = isLoginMode ? "Nu ai cont? Înregistrează-te aici" : "Ai deja cont? Loghează-te";
     }
 
     async function handleAuth() {
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
-
-        if (!email || !password) return alert("Te rog introdu email și parolă!");
-
+        if(!email || !password) return alert("Introdu datele!");
         try {
-            if (isLoginMode) {
-                // LOGARE - Folosim 'sb.auth'
-                const { data, error } = await sb.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                setupUI(data.user);
+            if(isLoginMode){
+                const {data, error} = await sb.auth.signInWithPassword({email, password});
+                if(error) throw error; setupUI(data.user);
             } else {
-                // INREGISTRARE - Folosim 'sb.auth'
-                const { data, error } = await sb.auth.signUp({ email, password });
-                if (error) throw error;
-                alert("Cont creat! Te logăm automat...");
-                const { data: loginData } = await sb.auth.signInWithPassword({ email, password });
-                setupUI(loginData.user);
+                const {data, error} = await sb.auth.signUp({email, password});
+                if(error) throw error; alert("Cont creat! Te logăm...");
+                const {data:ld} = await sb.auth.signInWithPassword({email, password}); setupUI(ld.user);
             }
-        } catch (err) {
-            alert("Eroare: " + err.message);
-        }
+        } catch(e) { alert(e.message); }
     }
 
-    async function setupUI(user) {
+    function setupUI(user) {
         currentUser = user;
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('app-content').style.display = 'block';
@@ -142,55 +172,39 @@
     }
 
     async function refreshCredits() {
-        // Luam creditele din tabelul 'profiles'
-        const { data, error } = await sb.from('profiles').select('credits').eq('email', currentUser.email).single();
-        if (data) {
-            document.getElementById('user-credits').textContent = data.credits;
-        } else {
-            document.getElementById('user-credits').textContent = "2 (Nou)";
-        }
+        const { data } = await sb.from('profiles').select('credits').eq('email', currentUser.email).single();
+        if(data) document.getElementById('user-credits').textContent = data.credits;
     }
 
-    async function signOut() {
-        await sb.auth.signOut();
-        location.reload();
-    }
+    async function signOut() { await sb.auth.signOut(); location.reload(); }
 
-    // Functia run() ramane la fel ca in versiunile anterioare, dar foloseste currentUser.email
     async function run() {
-        const sector = document.getElementById('sector-select').value;
-        const prob = document.getElementById('prob').value;
-        if(!sector || !prob) return alert("Alege sectorul și descrie problema!");
-
+        const prob = document.getElementById('prob').value.trim();
+        if(!sector || !prob) return alert("Selectează industria și scrie problema!");
+        
         const btn = document.getElementById('runBtn');
         btn.disabled = true;
-        document.getElementById('terminal').style.display = 'block';
-        document.getElementById('terminal').textContent = "> Oracle procesează datele...";
+        const term = document.getElementById('terminal');
+        term.style.display = 'block';
+        term.innerHTML = `> Inițializare Oracle v2.0...<br>> Verificare credite pentru ${currentUser.email}...`;
 
         try {
             const res = await fetch('/api/oracle', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    sector, 
-                    prob, 
-                    email: currentUser.email,
-                    systemPrompt: "Ești un expert McKinsey. Răspunde doar JSON..." 
-                })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ sector, prob, email: currentUser.email, systemPrompt: "Ești un expert McKinsey. Răspunde DOAR JSON..." })
             });
 
-            if (res.status === 403) {
+            if(res.status === 403) {
                 document.getElementById('paywallModal').style.display = 'flex';
-                btn.disabled = false;
-                return;
+                btn.disabled = false; return;
             }
 
             const data = await res.json();
+            term.innerHTML += `<br>> Analiză completă. Randare rezultate...`;
             render(data);
             refreshCredits();
-        } catch (e) {
-            alert("Eroare de conexiune la server.");
-        }
+        } catch(e) { alert("Eroare server!"); }
         btn.disabled = false;
     }
 
@@ -198,10 +212,10 @@
         document.getElementById('result').style.display = 'block';
         document.getElementById('result').innerHTML = `
             <div class="r-grid">
-                <div class="r-cell full"><div class="r-lbl">GAP PIATA</div><div>${r.gap || '—'}</div></div>
-                <div class="r-cell"><div class="r-lbl">VALOARE IP</div><div style="font-size:22px; font-weight:800;">$${r.valoare_min}-${r.valoare_max}M</div></div>
-                <div class="r-cell"><div class="r-lbl">DIFICULTATE</div><div>${r.dificultate || 'Ridicat'}</div></div>
-                <div class="r-cell full"><div class="r-lbl">STRATEGIE MONETIZARE</div><div>${r.monetizare || '—'}</div></div>
+                <div class="r-cell full"><div class="r-lbl">GAP IDENTIFICAT</div><div class="r-val">${r.gap}</div></div>
+                <div class="r-cell"><div class="r-lbl">VALOARE ESTIMATĂ</div><div class="r-big">$${r.valoare_min}-${r.valoare_max}M</div></div>
+                <div class="r-cell"><div class="r-lbl">DIFICULTATE</div><div class="r-big" style="font-size:18px">${r.dificultate}</div></div>
+                <div class="r-cell full"><div class="r-lbl">ARHITECTURĂ ȘI MONETIZARE</div><div class="r-val">${r.monetizare}</div></div>
             </div>`;
     }
 </script>
