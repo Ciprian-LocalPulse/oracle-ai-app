@@ -382,7 +382,15 @@ option{background:var(--deep)}
       <li>Analiză financiară detaliată</li>
       <li>Suport dedicat 24/7</li>
     </ul>
-    <a href="https://buy.stripe.com/bJeeVcdhsaMsgL44Wnc3m0a" class="stripe-btn">ACTIVARE PREMIUM — 19€/lună</a>
+    <div style="display: flex; gap: 15px; margin-top: 15px;">
+      <a href="https://buy.stripe.com/bJeeVcdhsaMsgL44Wnc3m0a" class="stripe-btn" style="flex: 1; font-size: 14px; background: transparent; border: 2px solid var(--border2); color: var(--text);">
+        PLAN LUNAR<br><span style="font-size: 20px; color: var(--gold);">19€</span> / lună
+      </a>
+      
+      <a href="https://buy.stripe.com/fZu5kCelw4o4cuObkLc3m0b" class="stripe-btn" style="flex: 1.2; font-size: 14px; box-shadow: 0 0 30px rgba(201,168,76,0.3);">
+        PLAN ANUAL (OFERTĂ)<br><span style="font-size: 24px; color: #000;">49.99€</span> / an
+      </a>
+    </div>
   </div>
 </div>
 
@@ -449,23 +457,37 @@ function toggleAuthMode(){
 async function handleAuth(){
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
+  
   if(!email || !password) return alert('Completați toate câmpurile.');
   document.getElementById('auth-btn-text').textContent = 'SE PROCESEAZĂ...';
+  
   try {
-    let data, error;
     if(isLoginMode){
-      ({data, error} = await sb.auth.signInWithPassword({email, password}));
+      // LOGARE
+      const {data, error} = await sb.auth.signInWithPassword({email, password});
       if(error) throw error;
       setupUI(data.user);
     } else {
-      ({data, error} = await sb.auth.signUp({email, password}));
+      // INREGISTRARE
+      const {data, error} = await sb.auth.signUp({email, password});
       if(error) throw error;
-      const r = await sb.auth.signInWithPassword({email, password});
-      if(r.error) throw r.error;
-      setupUI(r.data.user);
+      
+      // Mesaj pentru utilizator să își verifice adresa
+      alert('✅ Cont creat cu succes! \n\n⚠️ TE RUGĂM SĂ VERIFICI CĂSUȚA DE EMAIL (inclusiv folderul Spam) și să dai click pe linkul de confirmare înainte de a te loga.');
+      
+      // După înregistrare, îl mutăm înapoi pe ecranul de logare
+      toggleAuthMode();
+      document.getElementById('auth-btn-text').textContent = 'ACCESARE PLATFORMĂ';
     }
   } catch(e){
-    alert(e.message || 'Eroare autentificare.');
+    // Traducem eroarea de la Supabase pe înțelesul omului
+    if(e.message === "Email not confirmed") {
+      alert("❌ Eroare: Adresa de email nu a fost confirmată. Verifică-ți inbox-ul (sau Spam)!");
+    } else if (e.message.includes("Invalid login credentials")) {
+      alert("❌ Email sau parolă incorectă.");
+    } else {
+      alert("❌ Eroare: " + e.message);
+    }
     document.getElementById('auth-btn-text').textContent = isLoginMode ? 'ACCESARE PLATFORMĂ' : 'CREARE CONT ENTERPRISE';
   }
 }
