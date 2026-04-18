@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;900&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -199,7 +198,7 @@ option{background:var(--deep)}
 .modal-desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:2rem}
 .modal-features{list-style:none;text-align:left;margin-bottom:2rem;display:flex;flex-direction:column;gap:8px}
 .modal-features li{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text)}
-.modal-features li::before{content:'checkmark';color:var(--gold);font-weight:700;font-size:14px}
+.modal-features li::before{content:'✓';color:var(--gold);font-weight:700;font-size:14px}
 .stripe-btn{display:block;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;padding:20px;border-radius:10px;text-decoration:none;font-family:var(--condensed);font-size:18px;font-weight:900;letter-spacing:0.15em;transition:all 0.3s}
 .stripe-btn:hover{box-shadow:0 0 50px rgba(201,168,76,0.4);transform:translateY(-2px)}
 .modal-close{position:absolute;top:20px;right:20px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
@@ -339,8 +338,7 @@ option{background:var(--deep)}
             </div>
             <div id="result-grid"></div>
             <div class="actions-row">
-              <button class="action-btn primary" onclick="downloadPDF()">📥 EXPORT PDF ENTERPRISE</button>
-              <button class="action-btn" onclick="copyToClipboard()">📋 COPIERE RAPORT</button>
+              <button class="action-btn primary" onclick="copyToClipboard()">📋 COPIERE RAPORT FORMATAT</button>
               <button class="action-btn" onclick="newAnalysis()">↻ ANALIZĂ NOUĂ</button>
             </div>
           </div>
@@ -371,7 +369,6 @@ option{background:var(--deep)}
   </div>
 </div>
 
-<!-- PAYWALL MODAL -->
 <div class="modal-overlay" id="paywallModal">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="document.getElementById('paywallModal').style.display='none'">✕</button>
@@ -735,98 +732,73 @@ function renderResult(jsonStr){
   document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-/* =====================================================================
-   downloadPDF — FIX DEFINITIV (Vizibil pentru PDF, ascuns pentru user)
-   ===================================================================== */
-function downloadPDF(){
-  if(!lastResult) return alert('Eroare: Nu există date pentru raport!');
+/* ===================== FORMATTED COPY TO CLIPBOARD ===================== */
+function copyToClipboard() {
+  if (!lastResult) return alert('Eroare: Nu există date pentru copiere!');
+  const r = lastResult;
+  
+  let text = `=========================================\n`;
+  text += `ORACLE AI — RAPORT STRATEGIC\n`;
+  text += `=========================================\n\n`;
+  
+  text += `OPORTUNITATE STRATEGICĂ:\n${r.oportunitate || '—'}\n\n`;
+  
+  text += `METRICI CHEIE:\n`;
+  text += `- Valoare Exit Estimată: $${r.valoare_min}-${r.valoare_max}M\n`;
+  text += `- ARR Potențial (5 ani): ${r.arr_potential || '—'}\n`;
+  text += `- Multiplicator: ${r.multiplicator || '—'}\n`;
+  text += `- Scor Oportunitate: ${r.scor_oportunitate || '—'}/100\n`;
+  text += `- Dificultate: ${r.dificultate || '—'}\n`;
+  text += `- Break-even: ${r.timp_break_even || '—'}\n\n`;
+  
+  text += `MODEL DE MONETIZARE:\n${r.model_monetizare || '—'}\n\n`;
+  text += `STRATEGIE GO-TO-MARKET:\n${r.go_to_market || '—'}\n\n`;
+  
+  text += `COMPETITORI:\n`;
+  if (Array.isArray(r.competitori)) {
+    r.competitori.forEach(c => {
+      text += `- ${c.nume} (${c.stadiu}): ${c.weakness}\n`;
+    });
+  } else {
+    text += `—\n`;
+  }
+  text += `\n`;
 
-  var r = lastResult;
+  text += `AVANTAJ DEFENSIBIL:\n${r.avantaj_defensibil || '—'}\n\n`;
+  
+  text += `RISCURI:\n`;
+  if (Array.isArray(r.riscuri)) {
+    r.riscuri.forEach(rk => {
+      text += `- [${rk.impact}] ${rk.risc}: ${rk.mitigare}\n`;
+    });
+  } else {
+     text += `—\n`;
+  }
+  text += `\n`;
 
-  var htmlContent =
-    '<div style="font-family:Arial,sans-serif;color:#111;padding:50px;background:white;width:750px;">' +
-      '<div style="border-bottom:4px solid #c9a84c;padding-bottom:20px;margin-bottom:30px;">' +
-        '<h1 style="font-size:32px;margin:0;color:#000;">ORACLE AI — RAPORT STRATEGIC</h1>' +
-        '<p style="color:#666;font-size:11px;text-transform:uppercase;margin-top:10px;letter-spacing:0.1em;">' +
-          'Enterprise Intelligence · Confidential · ' + new Date().toLocaleDateString('ro-RO') +
-        '</p>' +
-      '</div>' +
-      buildPDFSection('Oportunitate Strategica', r.oportunitate) +
-      '<div style="display:flex;gap:20px;margin-bottom:30px;">' +
-        buildPDFBox('Valoare Exit (5 ani)', '$' + (r.valoare_min||'?') + '-' + (r.valoare_max||'?') + 'M') +
-        buildPDFBox('ARR Potential', r.arr_potential || '-') +
-        buildPDFBox('Scor Oportunitate', (r.scor_oportunitate || '-') + '/100') +
-        buildPDFBox('Break-even', r.timp_break_even || '-') +
-      '</div>' +
-      buildPDFSection('Model de Monetizare', r.model_monetizare) +
-      buildPDFSection('Strategie Go-To-Market', r.go_to_market) +
-      buildPDFSection('Avantaj Defensibil', r.avantaj_defensibil) +
-      buildPDFSection('Stack Tehnologic Recomandat', r.stack_recomandat) +
-      buildPDFSection('Potentiali Achizitori / Exit Targets', r.potentiali_achizitori) +
-      buildPDFSection('Verdict Executiv', r.verdict_executiv) +
-      '<div style="margin-top:50px;padding-top:20px;border-top:1px solid #eee;font-size:9px;color:#aaa;">' +
-        'Oracle AI Enterprise · Document Confidential · Generat de Oracle Intelligence Engine v4.2' +
-      '</div>' +
-    '</div>';
+  text += `INDICATORI DE SUCCES (KPIs):\n`;
+  if (Array.isArray(r.indicatori_succes)) {
+    r.indicatori_succes.forEach(kpi => {
+      text += `- ${kpi}\n`;
+    });
+  } else {
+     text += `—\n`;
+  }
+  text += `\n`;
 
-  var tempEl = document.createElement('div');
-  tempEl.style.position   = 'absolute';    // Folosim absolute, nu fixed
-  tempEl.style.top        = '0';
-  tempEl.style.left       = '0';
-  tempEl.style.width      = '800px';
-  tempEl.style.background = 'white';
-  tempEl.style.zIndex     = '-9999';       // Ascuns IN SPATELE site-ului
-  tempEl.style.opacity    = '1';           // TREBUIE să fie 1 ca PDF-ul să îl "vadă"
-  tempEl.style.pointerEvents = 'none';
-  tempEl.innerHTML = htmlContent;
-  document.body.appendChild(tempEl);
+  text += `STACK TEHNOLOGIC RECOMANDAT:\n${r.stack_recomandat || '—'}\n\n`;
+  text += `POTENȚIALI ACHIZITORI:\n${r.potentiali_achizitori || '—'}\n\n`;
+  text += `VERDICT EXECUTIV:\n${r.verdict_executiv || '—'}\n\n`;
+  
+  text += `=========================================\n`;
+  text += `Generat automat de Oracle Intelligence Engine\n`;
 
-  var opt = {
-    margin:    0.5,
-    filename:  'Oracle_Strategic_Report_' + Date.now() + '.pdf',
-    image:     { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: true }, // Am activat logging pentru a prinde erori interne
-    jsPDF:     { unit: 'in', format: 'letter', orientation: 'portrait' }
-  };
-
-  setTimeout(function(){
-    html2pdf()
-      .set(opt)
-      .from(tempEl)
-      .save()
-      .then(function(){
-        document.body.removeChild(tempEl);
-      })
-      .catch(function(err){
-        if(document.body.contains(tempEl)) document.body.removeChild(tempEl);
-        console.error('PDF error:', err);
-        alert('Browserul blochează PDF-ul! Dezactivează Brave Shields sau Antivirusul.');
-      });
-  }, 400);
-}
-/* ===================== PDF HELPERS ===================== */
-function buildPDFSection(title, content){
-  if(!content) return '';
-  return '<div style="margin-bottom:24px;">' +
-    '<div style="font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;' +
-    'color:#c9a84c;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0e8d5;">' +
-    title + '</div>' +
-    '<div style="font-size:13px;line-height:1.75;color:#333;">' + content + '</div>' +
-    '</div>';
-}
-
-function buildPDFBox(label, val){
-  return '<div style="flex:1;border:1px solid #eee;border-radius:8px;padding:16px;text-align:center;">' +
-    '<div style="font-size:9px;color:#888;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">' + label + '</div>' +
-    '<div style="font-size:20px;font-weight:700;color:#c9a84c;">' + val + '</div>' +
-    '</div>';
-}
-
-/* ===================== UTILS ===================== */
-function copyToClipboard(){
-  if(!lastResult) return;
-  navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
-  alert('Raport copiat in clipboard.');
+  navigator.clipboard.writeText(text).then(() => {
+    alert('✅ Raportul formatat a fost copiat în clipboard! Acum poți da Paste (Ctrl+V) în Word sau Google Docs.');
+  }).catch(err => {
+    alert('Eroare la copiere!');
+    console.error(err);
+  });
 }
 
 function newAnalysis(){
